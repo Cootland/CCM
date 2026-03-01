@@ -160,6 +160,28 @@ async function post(url) {
   return body;
 }
 
+function setActionResult(message, isError = false) {
+  const el = $('actionResult');
+  el.textContent = message;
+  el.classList.remove('ok', 'err');
+  el.classList.add(isError ? 'err' : 'ok');
+}
+
+async function runAction(label, fn) {
+  try {
+    setActionResult(`${label}...`);
+    const result = await fn();
+    setActionResult(`${label} complete${result && result.exit_code !== undefined ? ` (exit ${result.exit_code})` : ''}.`);
+    await fetchInventory();
+  } catch (err) {
+    let msg = err?.message || String(err);
+    if (msg.includes('missing bearer token') || msg.includes('invalid token')) {
+      msg += ' Set token in browser: localStorage.setItem("ccm_token","<token>")';
+    }
+    setActionResult(`${label} failed: ${msg}`, true);
+  }
+}
+
 $('search').addEventListener('input', renderItems);
 $('btnPause').onclick = () => {
   paused = !paused;
@@ -169,16 +191,32 @@ $('btnClear').onclick = () => {
   $('logs').textContent = '';
 };
 $('btnStart').onclick = async () => {
-  if (selected?.type === 'container') await post(`/v1/containers/${encodeURIComponent(selected.id)}/start`);
+  if (selected?.type !== 'container') {
+    setActionResult('Select a container first.', true);
+    return;
+  }
+  await runAction('Start', () => post(`/v1/containers/${encodeURIComponent(selected.id)}/start`));
 };
 $('btnStop').onclick = async () => {
-  if (selected?.type === 'container') await post(`/v1/containers/${encodeURIComponent(selected.id)}/stop`);
+  if (selected?.type !== 'container') {
+    setActionResult('Select a container first.', true);
+    return;
+  }
+  await runAction('Stop', () => post(`/v1/containers/${encodeURIComponent(selected.id)}/stop`));
 };
 $('btnRestart').onclick = async () => {
-  if (selected?.type === 'container') await post(`/v1/containers/${encodeURIComponent(selected.id)}/restart`);
+  if (selected?.type !== 'container') {
+    setActionResult('Select a container first.', true);
+    return;
+  }
+  await runAction('Restart', () => post(`/v1/containers/${encodeURIComponent(selected.id)}/restart`));
 };
 $('btnRedeploy').onclick = async () => {
-  if (selected?.type === 'compose') await post(`/v1/compose/${encodeURIComponent(selected.id)}/redeploy`);
+  if (selected?.type !== 'compose') {
+    setActionResult('Select a compose stack first.', true);
+    return;
+  }
+  await runAction('Redeploy', () => post(`/v1/compose/${encodeURIComponent(selected.id)}/redeploy`));
 };
 
 function switchTab(tab) {

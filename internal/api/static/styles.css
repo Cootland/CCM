@@ -225,6 +225,25 @@ body {
   padding: 7px;
 }
 
+.action-result {
+  padding: 6px 8px;
+  border: 2px solid;
+  border-color: var(--line-deep) var(--line-light) var(--line-light) var(--line-deep);
+  background: #ececec;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.action-result.ok {
+  color: #0a5f0a;
+}
+
+.action-result.err {
+  color: #8f1111;
+}
+
 button {
   font-family: inherit;
   font-size: 12px;
