@@ -41,7 +41,45 @@ func (s *Service) containerCmd(ctx context.Context, id, op string) (model.Comman
 		return model.CommandResult{}, fmt.Errorf("unknown target %q", targetID)
 	}
 	cmd := fmt.Sprintf("docker %s %s", op, containerID)
-	return s.ssh.RunCommand(ctx, targetID, cmd, 30*time.Second)
+	res, err := s.ssh.RunCommand(ctx, targetID, cmd, 30*time.Second)
+	if err == nil {
+		return res, nil
+	}
+
+	// Some SSH servers can drop command exit status even when docker action completed.
+	// Verify container state before reporting failure to the UI.
+	expectedRunning := op != "stop"
+	if s.verifyRunningState(ctx, targetID, containerID, expectedRunning) {
+		reason := "command exit status unavailable; container state verified"
+		if strings.TrimSpace(res.Stderr) == "" {
+			res.Stderr = reason
+		} else {
+			res.Stderr = strings.TrimSpace(res.Stderr) + "; " + reason
+		}
+		res.ExitCode = 0
+		return res, nil
+	}
+	return res, err
+}
+
+func (s *Service) verifyRunningState(ctx context.Context, targetID, containerID string, wantRunning bool) bool {
+	deadline := time.Now().Add(8 * time.Second)
+	for time.Now().Before(deadline) {
+		select {
+		case <-ctx.Done():
+			return false
+		default:
+		}
+		res, err := s.ssh.RunCommand(ctx, targetID, fmt.Sprintf("docker inspect -f '{{.State.Running}}' %s", containerID), 5*time.Second)
+		if err == nil && res.ExitCode == 0 {
+			running := strings.EqualFold(strings.TrimSpace(res.Stdout), "true")
+			if running == wantRunning {
+				return true
+			}
+		}
+		time.Sleep(700 * time.Millisecond)
+	}
+	return false
 }
 
 func parseContainerRef(id string) (string, string, error) {
