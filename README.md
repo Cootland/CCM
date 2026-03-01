@@ -56,19 +56,12 @@ go run ./cmd/ccm -config ./examples/config.yml -listen :8080
 docker compose up -d
 ```
 
-`docker-compose.yml` runs two services:
+You can run CCM in two ways:
 
-- `ccm` app container
-- `caddy` reverse proxy with TLS for `ccm.janssen.host`
+- Minimal (no Caddy): expose CCM directly on a host port.
+- With Caddy: add reverse proxy/TLS in front of CCM.
 
-Before first run, create `/opt/ccm/.env` with:
-
-```bash
-CLOUDFLARE_API_TOKEN=replace-with-cloudflare-token
-ACME_EMAIL=you@example.com
-```
-
-And place a Caddyfile at `/opt/ccm/Caddyfile` (or use the sample at `caddy/Caddyfile.example`).
+`Caddyfile` is optional and only needed if you run the Caddy service.
 
 ## First-time host deployment (explicit steps)
 
@@ -80,7 +73,7 @@ sudo mkdir -p /opt/ccm
 cd /opt/ccm
 ```
 
-2. Create `docker-compose.yml`:
+2. Create `docker-compose.yml` (minimal, no Caddy):
 ```yaml
 services:
   ccm:
@@ -90,45 +83,21 @@ services:
     volumes:
       - /etc/ccm:/etc/ccm:ro
       - /home/logan/.ssh:/home/logan/.ssh:ro
+    ports:
+      - "8080:8080"
     environment:
       - CCM_SSH_KEY=/home/logan/.ssh/id_ed25519
-
-  caddy:
-    image: ghcr.io/caddybuilds/caddy-cloudflare:latest
-    container_name: ccm-caddy
-    restart: unless-stopped
-    depends_on:
-      - ccm
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
-      - ACME_EMAIL=${ACME_EMAIL}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-
-volumes:
-  caddy_data:
-  caddy_config:
 ```
 
-3. Create `.env`:
+3. (Optional) If you want Caddy/TLS, add the `caddy` service from [`docker-compose.yml`](docker-compose.yml), then create `.env`:
 ```bash
 cat > /opt/ccm/.env <<'EOF'
 CLOUDFLARE_API_TOKEN=replace-with-cloudflare-token
-ACME_EMAIL=you@example.com
 EOF
 ```
 
-4. Create `Caddyfile`:
+4. (Optional) If you enabled Caddy, create `Caddyfile`:
 ```caddy
-{
-  email {$ACME_EMAIL}
-}
-
 ccm.janssen.host {
   tls {
     dns cloudflare {env.CLOUDFLARE_API_TOKEN}
@@ -208,7 +177,7 @@ Required secrets:
 
 - `CCM_URL` (example `http://ccm.internal:8080`)
 - `CLOUDFLARE_API_TOKEN`
-- `ACME_EMAIL`
+- `ACME_EMAIL` (optional, only if your Caddyfile uses it)
 
 Note: CCM currently runs without API authentication for internal-network use.
 
