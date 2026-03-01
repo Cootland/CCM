@@ -1,0 +1,72 @@
+name: Release And Self Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push-deploy:
+    runs-on: [self-hosted, linux]
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+      id: vars
+      run: |
+        echo "sha_short=$(echo $GITHUB_SHA | cut -c1-12)" >> $GITHUB_OUTPUT
+
+      - name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+      run: |
+        IMAGE="${REGISTRY}/${IMAGE_NAME}"
+        docker build -t "${IMAGE}:${{ steps.vars.outputs.sha_short }}" -t "${IMAGE}:latest" .
+        docker push "${IMAGE}:${{ steps.vars.outputs.sha_short }}"
+        docker push "${IMAGE}:latest"
+
+      - name: Render compose
+      run: |
+        IMAGE="${REGISTRY}/${IMAGE_NAME}:${{ steps.vars.outputs.sha_short }}"
+        cat > docker-compose.rendered.yml <<EOF2
+        services:
+          ccm:
+            image: ${IMAGE}
+            container_name: ccm
+            restart: unless-stopped
+            ports:
+              - "8080:8080"
+            volumes:
+              - /etc/ccm:/etc/ccm:ro
+              - /home/deploy/.ssh:/home/ccm/.ssh:ro
+            environment:
+              - CCM_SSH_KEY=/home/ccm/.ssh/id_ed25519
+        EOF2
+
+      - name: Deploy via CCM API
+      env:
+        CCM_URL: ${{ secrets.CCM_URL }}
+        CCM_TOKEN: ${{ secrets.CCM_TOKEN }}
+      run: |
+        jq -n \
+          --arg stack "ccm" \
+          --arg repo "${GITHUB_REPOSITORY}" \
+          --arg sha "${GITHUB_SHA}" \
+          --arg compose "$(cat docker-compose.rendered.yml)" \
+          '{ccm_stack:$stack, repo:$repo, sha:$sha, compose_yml:$compose}' > payload.json
+
+        curl -fsSL -X POST "${CCM_URL}/v1/deploy" \
+          -H "Authorization: Bearer ${CCM_TOKEN}" \
+          -H "Content-Type: application/json" \
+          --data @payload.json

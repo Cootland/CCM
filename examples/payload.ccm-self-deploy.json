@@ -1,0 +1,7 @@
+{
+  "ccm_stack": "ccm",
+  "repo": "loganjanssen/ccm",
+  "sha": "5555555555555555555555555555555555555555",
+  "compose_yml": "services:\n  ccm:\n    image: ghcr.io/loganjanssen/ccm:555555555555\n    container_name: ccm\n    restart: unless-stopped\n    ports:\n      - \"8080:8080\"\n    volumes:\n      - /etc/ccm:/etc/ccm:ro\n      - /home/deploy/.ssh:/home/ccm/.ssh:ro\n    environment:\n      - CCM_SSH_KEY=/home/ccm/.ssh/id_ed25519\n",
+  "caddyfile": "ccm.internal {\n  reverse_proxy ccm:8080\n}\n"
+}

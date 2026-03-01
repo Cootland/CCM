@@ -1,0 +1,194 @@
+package deploy
+
+import (
+	"context"
+	"fmt"
+	"path"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/loganjanssen/ccm/internal/config"
+	"github.com/loganjanssen/ccm/internal/model"
+	"github.com/loganjanssen/ccm/internal/sshx"
+)
+
+type Service struct {
+	cfg  *config.Config
+	ssh  *sshx.Manager
+	mu   sync.Mutex
+	lock map[string]*sync.Mutex
+}
+
+var envKeyPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+
+func NewService(cfg *config.Config, ssh *sshx.Manager) *Service {
+	return &Service{cfg: cfg, ssh: ssh, lock: map[string]*sync.Mutex{}}
+}
+
+func (s *Service) Deploy(ctx context.Context, req model.DeployRequest) (map[string]any, error) {
+	stack, ok := s.cfg.Stacks[req.CCMStack]
+	if !ok {
+		return nil, fmt.Errorf("unknown ccm_stack %q", req.CCMStack)
+	}
+	if strings.TrimSpace(req.ComposeYML) == "" {
+		return nil, fmt.Errorf("compose_yml is required")
+	}
+
+	unlock := s.stackLock(req.CCMStack)
+	defer unlock()
+
+	deployPath := path.Join(stack.Target.DeployRoot, stack.DeploySubdir)
+
+	if err := s.ssh.WriteFile(ctx, stack.TargetID, path.Join(deployPath, "docker-compose.yml"), []byte(req.ComposeYML), "0644", 10*time.Second); err != nil {
+		return nil, fmt.Errorf("write docker-compose.yml: %w", err)
+	}
+
+	envContent, envCount, err := buildEnvContent(req.EnvFile, req.Env)
+	if err != nil {
+		return nil, err
+	}
+	if strings.TrimSpace(envContent) != "" {
+		if err := s.ssh.WriteFile(ctx, stack.TargetID, path.Join(deployPath, ".env"), []byte(envContent), "0600", 10*time.Second); err != nil {
+			return nil, fmt.Errorf("write .env: %w", err)
+		}
+	}
+	if strings.TrimSpace(req.Caddyfile) != "" {
+		if err := s.ssh.WriteFile(ctx, stack.TargetID, path.Join(deployPath, "Caddyfile"), []byte(req.Caddyfile), "0644", 10*time.Second); err != nil {
+			return nil, fmt.Errorf("write Caddyfile: %w", err)
+		}
+	}
+
+	results, err := s.runComposeUp(ctx, stack, deployPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return map[string]any{
+		"stack":       req.CCMStack,
+		"target":      stack.TargetID,
+		"deploy_path": deployPath,
+		"repo":        req.Repo,
+		"sha":         req.SHA,
+		"env_count":   envCount,
+		"caddyfile":   strings.TrimSpace(req.Caddyfile) != "",
+		"steps":       results,
+	}, nil
+}
+
+func (s *Service) RedeployStack(ctx context.Context, stackID string) (map[string]any, error) {
+	stack, ok := s.cfg.Stacks[stackID]
+	if !ok {
+		return nil, fmt.Errorf("unknown stack: %s", stackID)
+	}
+	unlock := s.stackLock(stackID)
+	defer unlock()
+	deployPath := path.Join(stack.Target.DeployRoot, stack.DeploySubdir)
+	results, err := s.runComposeUp(ctx, stack, deployPath)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"stack":       stackID,
+		"target":      stack.TargetID,
+		"deploy_path": deployPath,
+		"repo":        "manual",
+		"sha":         "manual",
+		"steps":       results,
+	}, nil
+}
+
+func (s *Service) stackLock(id string) func() {
+	s.mu.Lock()
+	m, ok := s.lock[id]
+	if !ok {
+		m = &sync.Mutex{}
+		s.lock[id] = m
+	}
+	s.mu.Unlock()
+	m.Lock()
+	return m.Unlock
+}
+
+func (s *Service) runComposeUp(ctx context.Context, stack *model.CCMStack, deployPath string) ([]model.CommandResult, error) {
+	results := []model.CommandResult{}
+	if stack.Flags.Pull {
+		cmd := fmt.Sprintf("cd %q && docker compose pull", deployPath)
+		res, err := s.ssh.RunCommand(ctx, stack.TargetID, cmd, 10*time.Minute)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, res)
+		if res.ExitCode != 0 {
+			return results, nil
+		}
+	}
+
+	up := "docker compose up -d"
+	if stack.Flags.RemoveOrphans {
+		up += " --remove-orphans"
+	}
+	if strings.EqualFold(stack.Flags.Recreate, "force") {
+		up += " --force-recreate"
+	}
+	cmd := fmt.Sprintf("cd %q && %s", deployPath, up)
+	res, err := s.ssh.RunCommand(ctx, stack.TargetID, cmd, 10*time.Minute)
+	if err != nil {
+		return nil, err
+	}
+	results = append(results, res)
+	return results, nil
+}
+
+func buildEnvContent(raw string, env map[string]string) (string, int, error) {
+	values := map[string]string{}
+	if strings.TrimSpace(raw) != "" {
+		for _, line := range strings.Split(raw, "\n") {
+			trimmed := strings.TrimSpace(line)
+			if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+				continue
+			}
+			parts := strings.SplitN(trimmed, "=", 2)
+			if len(parts) != 2 {
+				return "", 0, fmt.Errorf("invalid env_file line %q", line)
+			}
+			key := strings.TrimSpace(parts[0])
+			if !envKeyPattern.MatchString(key) {
+				return "", 0, fmt.Errorf("invalid env key %q in env_file", key)
+			}
+			values[key] = strings.TrimSpace(parts[1])
+		}
+	}
+	for k, v := range env {
+		if !envKeyPattern.MatchString(k) {
+			return "", 0, fmt.Errorf("invalid env key %q", k)
+		}
+		values[k] = v
+	}
+	if len(values) == 0 {
+		return "", 0, nil
+	}
+	keys := make([]string, 0, len(values))
+	for k := range values {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	lines := make([]string, 0, len(keys))
+	for _, k := range keys {
+		lines = append(lines, k+"="+renderEnvValue(values[k]))
+	}
+	return strings.Join(lines, "\n") + "\n", len(values), nil
+}
+
+func renderEnvValue(v string) string {
+	if v == "" {
+		return ""
+	}
+	if strings.ContainsAny(v, " \t#\"'\\") {
+		return strconv.Quote(v)
+	}
+	return v
+}

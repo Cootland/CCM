@@ -1,0 +1,13 @@
+{
+  "ccm_stack": "repo-a__service1",
+  "repo": "example/repo-a",
+  "sha": "4444444444444444444444444444444444444444",
+  "compose_yml": "services:\n  app:\n    image: ghcr.io/example/repo-a:444444444444\n    env_file:\n      - .env\n    restart: unless-stopped\n",
+  "env_file": "APP_ENV=staging\nAPP_PORT=8080\n",
+  "env": {
+    "APP_ENV": "production",
+    "FEATURE_FLAGS": "new-ui,trace",
+    "SECRET_TOKEN": "replace-me"
+  },
+  "caddyfile": "app.example.internal {\n  encode gzip\n  reverse_proxy app:8080\n}\n"
+}
