@@ -87,18 +87,23 @@ func (s *Service) RedeployStack(ctx context.Context, stackID string) (map[string
 	unlock := s.stackLock(stackID)
 	defer unlock()
 	deployPath := path.Join(stack.Target.DeployRoot, stack.DeploySubdir)
-	results, err := s.runComposeUp(ctx, stack, deployPath)
+	results, async, logPath, err := s.runComposeUpSafe(ctx, stack, deployPath)
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{
+	out := map[string]any{
 		"stack":       stackID,
 		"target":      stack.TargetID,
 		"deploy_path": deployPath,
 		"repo":        "manual",
 		"sha":         "manual",
 		"steps":       results,
-	}, nil
+		"async":       async,
+	}
+	if logPath != "" {
+		out["log_path"] = logPath
+	}
+	return out, nil
 }
 
 func (s *Service) stackLock(id string) func() {
@@ -141,6 +146,44 @@ func (s *Service) runComposeUp(ctx context.Context, stack *model.CCMStack, deplo
 	}
 	results = append(results, res)
 	return results, nil
+}
+
+func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, deployPath string) ([]model.CommandResult, bool, string, error) {
+	if stack.ID != "ccm" {
+		results, err := s.runComposeUp(ctx, stack, deployPath)
+		return results, false, "", err
+	}
+
+	results := []model.CommandResult{}
+	checkCmd := fmt.Sprintf("cd %q && docker compose config -q", deployPath)
+	checkRes, err := s.ssh.RunCommand(ctx, stack.TargetID, checkCmd, 30*time.Second)
+	if err != nil {
+		return nil, false, "", err
+	}
+	results = append(results, checkRes)
+	if checkRes.ExitCode != 0 {
+		return results, false, "", nil
+	}
+
+	up := "docker compose up -d"
+	if stack.Flags.RemoveOrphans {
+		up += " --remove-orphans"
+	}
+	if strings.EqualFold(stack.Flags.Recreate, "force") {
+		up += " --force-recreate"
+	}
+	script := up
+	if stack.Flags.Pull {
+		script = "docker compose pull && " + up
+	}
+	logPath := fmt.Sprintf("/tmp/ccm-redeploy-%d.log", time.Now().Unix())
+	detachCmd := fmt.Sprintf("cd %q && nohup sh -c %s > %q 2>&1 < /dev/null &", deployPath, strconv.Quote(script), logPath)
+	detachRes, err := s.ssh.RunCommand(ctx, stack.TargetID, detachCmd, 15*time.Second)
+	if err != nil {
+		return nil, false, "", err
+	}
+	results = append(results, detachRes)
+	return results, true, logPath, nil
 }
 
 func buildEnvContent(raw string, env map[string]string) (string, int, error) {

@@ -216,6 +216,20 @@ async function runAction(label, fn) {
   }
 }
 
+async function waitForServiceRecovery(timeoutMs = 45000, intervalMs = 1500) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    try {
+      const res = await fetch('/healthz', { cache: 'no-store' });
+      if (res.ok) return true;
+    } catch (_) {
+      // ignore transient reconnect failures while CCM restarts
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return false;
+}
+
 $('search').addEventListener('input', renderItems);
 $('btnPause').onclick = () => {
   paused = !paused;
@@ -275,7 +289,27 @@ $('btnRedeploy').onclick = async () => {
     setActionResult('Select a compose stack first.', true);
     return;
   }
-  await runAction('Redeploy', () => post(`/v1/compose/${encodeURIComponent(selected.id)}/redeploy`));
+  const redeployURL = `/v1/compose/${encodeURIComponent(selected.id)}/redeploy`;
+  try {
+    setActionResult('Redeploying...');
+    await post(redeployURL);
+    setActionResult('Redeploy complete.');
+    await fetchInventory();
+  } catch (err) {
+    const msg = err?.message || String(err);
+    if (msg.includes('502')) {
+      setActionResult('Redeploy request interrupted while CCM restarted. Waiting for service recovery...');
+      const recovered = await waitForServiceRecovery();
+      if (recovered) {
+        setActionResult('CCM is back online after redeploy. Refreshing inventory...');
+        await fetchInventory();
+      } else {
+        setActionResult('CCM did not recover within 45s after redeploy attempt.', true);
+      }
+      return;
+    }
+    setActionResult(`Redeploy failed: ${msg}`, true);
+  }
 };
 
 function switchTab(tab) {
