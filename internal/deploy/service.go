@@ -156,6 +156,23 @@ func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, d
 
 	results := []model.CommandResult{}
 	logPath := fmt.Sprintf("ccm-redeploy-%s-%d.log", stack.ID, time.Now().Unix())
+	prepareLogCmd := fmt.Sprintf("cd %q && : > %q", deployPath, logPath)
+	prepareLogRes, err := s.ssh.RunCommand(ctx, stack.TargetID, prepareLogCmd, 10*time.Second)
+	if err != nil {
+		return nil, false, "", err
+	}
+	results = append(results, prepareLogRes)
+	if prepareLogRes.ExitCode != 0 {
+		msg := strings.TrimSpace(prepareLogRes.Stderr)
+		if msg == "" {
+			msg = strings.TrimSpace(prepareLogRes.Stdout)
+		}
+		if msg == "" {
+			msg = "unknown error preparing log file"
+		}
+		return results, false, "", fmt.Errorf("prepare redeploy log %q: %s", path.Join(deployPath, logPath), msg)
+	}
+
 	script := buildRedeployScript(stack, logPath)
 	detachCmd := fmt.Sprintf("cd %q && nohup sh -c %s < /dev/null > /dev/null 2>&1 &", deployPath, strconv.Quote(script))
 	detachRes, err := s.ssh.RunCommand(ctx, stack.TargetID, detachCmd, 15*time.Second)
