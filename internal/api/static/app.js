@@ -2,6 +2,7 @@ let inventory = [];
 let selected = null;
 let stream = null;
 let paused = false;
+let composeChildren = [];
 
 const $ = (id) => document.getElementById(id);
 
@@ -39,6 +40,10 @@ async function selectItem(item) {
 
   if (item.type === 'container') {
     const res = await fetch(`/v1/containers/${encodeURIComponent(item.id)}`);
+    if (!res.ok) {
+      $('details').textContent = `Failed to load container details (${res.status})`;
+      return;
+    }
     const c = await res.json();
     renderStats([
       ['Image', c.image],
@@ -49,10 +54,18 @@ async function selectItem(item) {
       ['Target', c.target_id],
     ]);
     $('details').textContent = JSON.stringify(c, null, 2);
+    composeChildren = [];
+    renderServices([]);
     startLogs(c.id);
+    switchTab('logs');
   } else if (item.type === 'compose') {
     const res = await fetch(`/v1/items/${encodeURIComponent(item.id)}/children`);
+    if (!res.ok) {
+      $('details').textContent = `Failed to load compose services (${res.status})`;
+      return;
+    }
     const children = await res.json();
+    composeChildren = children;
     renderStats([
       ['Project', item.name],
       ['Services', children.length],
@@ -61,10 +74,14 @@ async function selectItem(item) {
       ['Stack ID', item.id],
     ]);
     $('details').textContent = JSON.stringify(children, null, 2);
+    renderServices(children);
     stopLogs();
+    switchTab('services');
   } else {
     renderStats([['Error', item.name]]);
     $('details').textContent = JSON.stringify(item, null, 2);
+    composeChildren = [];
+    renderServices([]);
     stopLogs();
   }
 }
@@ -91,6 +108,32 @@ function startLogs(id) {
       $('logs').scrollTop = $('logs').scrollHeight;
     }
   };
+  stream.onerror = () => {
+    $('logs').textContent += '[stream error or disconnected]\n';
+  };
+}
+
+function renderServices(children) {
+  const host = $('services');
+  if (!children || children.length === 0) {
+    host.innerHTML = '<div class="muted">No compose services for current selection.</div>';
+    return;
+  }
+
+  host.innerHTML = '';
+  children.forEach((c) => {
+    const btn = document.createElement('button');
+    btn.className = 'service-item';
+    btn.innerHTML = `<strong>${c.name}</strong><span class="service-meta">${c.status} | ${c.image || '-'} | ${c.container_id}</span>`;
+    btn.onclick = () => selectItem({
+      type: 'container',
+      id: c.id,
+      name: c.name,
+      target_id: c.target_id,
+      status: c.status,
+    });
+    host.appendChild(btn);
+  });
 }
 
 async function post(url) {
@@ -123,12 +166,15 @@ $('btnRedeploy').onclick = async () => {
   if (selected?.type === 'compose') await post(`/v1/compose/${encodeURIComponent(selected.id)}/redeploy`);
 };
 
-document.querySelectorAll('.tab').forEach(btn => btn.onclick = () => {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('panel-active'));
-  document.getElementById(`panel${btn.dataset.tab[0].toUpperCase() + btn.dataset.tab.slice(1)}`).classList.add('panel-active');
-});
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  document.querySelectorAll('.panel').forEach((p) => p.classList.remove('panel-active'));
+  document.getElementById(`panel${tab[0].toUpperCase() + tab.slice(1)}`).classList.add('panel-active');
+}
+
+document.querySelectorAll('.tab').forEach(btn => btn.onclick = () => switchTab(btn.dataset.tab));
 
 function tickClock() {
   const now = new Date();
@@ -138,6 +184,7 @@ function tickClock() {
 (async function init() {
   tickClock();
   setInterval(tickClock, 1000);
+  renderServices([]);
   await fetchInventory();
   setInterval(fetchInventory, 4000);
 })();
