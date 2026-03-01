@@ -27,6 +27,11 @@
       out.textContent += evt.data + '\n';
       out.scrollTop = out.scrollHeight;
     };
+    es.addEventListener('error', (evt) => {
+      if (evt && typeof evt.data === 'string' && evt.data.trim()) {
+        out.textContent += `[stream error] ${evt.data}\n`;
+      }
+    });
     es.onerror = () => {
       out.textContent += '[stream error or disconnected]\n';
     };

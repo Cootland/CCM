@@ -204,8 +204,11 @@ $('btnPopoutRaw').onclick = () => {
     setActionResult('Select a container first.', true);
     return;
   }
+  // Backend allows one log-stream SSH slot per target, so hand off stream to popout.
+  stopLogs();
   const url = `/raw-logs.html?id=${encodeURIComponent(selected.id)}&tail=200`;
   window.open(url, '_blank', 'noopener,noreferrer');
+  setActionResult('Opened raw log popout (main stream paused).');
 };
 $('btnStart').onclick = async () => {
   if (selected?.type !== 'container') {
