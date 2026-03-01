@@ -186,12 +186,39 @@ func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, d
 	}
 
 	script := buildRedeployScript(stack, logPath)
-	detachCmd := fmt.Sprintf("cd %q && nohup sh -c %s < /dev/null > /dev/null 2>&1 &", deployPath, strconv.Quote(script))
+	detachCmd := fmt.Sprintf("cd %q && nohup sh -c %s >> %q 2>&1 < /dev/null & echo $!", deployPath, strconv.Quote(script), logPath)
 	detachRes, err := s.ssh.RunCommand(ctx, stack.TargetID, detachCmd, 15*time.Second)
 	if err != nil {
 		return nil, false, "", err
 	}
 	results = append(results, detachRes)
+	pid := strings.TrimSpace(detachRes.Stdout)
+	if pid == "" {
+		msg := strings.TrimSpace(detachRes.Stderr)
+		if msg == "" {
+			msg = "detached redeploy did not return a pid"
+		}
+		return results, false, "", fmt.Errorf("launch redeploy worker failed: %s", msg)
+	}
+	if _, perr := strconv.Atoi(pid); perr != nil {
+		return results, false, "", fmt.Errorf("launch redeploy worker returned invalid pid %q", pid)
+	}
+	checkCmd := fmt.Sprintf("kill -0 %s", pid)
+	checkRes, err := s.ssh.RunCommand(ctx, stack.TargetID, checkCmd, 5*time.Second)
+	if err != nil {
+		return nil, false, "", err
+	}
+	results = append(results, checkRes)
+	if checkRes.ExitCode != 0 {
+		msg := strings.TrimSpace(checkRes.Stderr)
+		if msg == "" {
+			msg = strings.TrimSpace(checkRes.Stdout)
+		}
+		if msg == "" {
+			msg = "worker exited immediately after launch"
+		}
+		return results, false, "", fmt.Errorf("redeploy worker not running (pid %s): %s", pid, msg)
+	}
 	return results, true, logPath, nil
 }
 
@@ -230,7 +257,7 @@ fi
 `
 	}
 
-	return fmt.Sprintf(`LOG_PATH=%s
+	return fmt.Sprintf(`
 log() { printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "$1"; }
 {
   log "Redeploy started"
@@ -256,8 +283,8 @@ log() { printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "$1"; }
   log "Running: docker compose ps"
   docker compose ps
   log "Redeploy finished successfully"
-} >>"$LOG_PATH" 2>&1
-`, strconv.Quote(logPath), stack.ID, stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate, pullLine, up, up, up)
+}
+`, stack.ID, stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate, pullLine, up, up, up)
 }
 
 func buildEnvContent(raw string, env map[string]string) (string, int, error) {
