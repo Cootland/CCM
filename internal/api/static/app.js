@@ -293,10 +293,13 @@ $('btnRedeploy').onclick = async () => {
   try {
     setActionResult('Redeploying...');
     const out = await post(redeployURL);
+    const resolvedLogPath = (out?.log_path && out?.deploy_path && !String(out.log_path).startsWith('/'))
+      ? `${out.deploy_path}/${out.log_path}`
+      : out?.log_path;
     if (out?.async && out?.log_path) {
-      setActionResult(`Redeploy started in background. Log: ${out.log_path}`);
+      setActionResult(`Redeploy started in background. Log: ${resolvedLogPath}`);
     } else if (out?.log_path) {
-      setActionResult(`Redeploy complete. Log: ${out.log_path}`);
+      setActionResult(`Redeploy complete. Log: ${resolvedLogPath}`);
     } else {
       setActionResult('Redeploy complete.');
     }

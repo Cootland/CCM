@@ -149,7 +149,7 @@ func (s *Service) runComposeUp(ctx context.Context, stack *model.CCMStack, deplo
 }
 
 func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, deployPath string) ([]model.CommandResult, bool, string, error) {
-	if stack.ID != "ccm" {
+	if !isLikelySelfCCMStack(stack) {
 		results, err := s.runComposeUp(ctx, stack, deployPath)
 		return results, false, "", err
 	}
@@ -164,6 +164,16 @@ func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, d
 	}
 	results = append(results, detachRes)
 	return results, true, logPath, nil
+}
+
+func isLikelySelfCCMStack(stack *model.CCMStack) bool {
+	if strings.EqualFold(stack.ID, "ccm") {
+		return true
+	}
+	if strings.EqualFold(path.Base(stack.DeploySubdir), "ccm") {
+		return true
+	}
+	return false
 }
 
 func buildRedeployScript(stack *model.CCMStack, logPath string) string {
