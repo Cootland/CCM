@@ -10,8 +10,10 @@ permissions:
   packages: write
 
 jobs:
-  build-push-deploy:
-    runs-on: [self-hosted, linux]
+  build-push:
+    runs-on: ubuntu-latest
+    outputs:
+      sha_short: ${{ steps.vars.outputs.sha_short }}
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
@@ -37,9 +39,18 @@ jobs:
           docker push "${IMAGE}:${{ steps.vars.outputs.sha_short }}"
           docker push "${IMAGE}:latest"
 
+  deploy:
+    runs-on: [self-hosted, linux]
+    needs: build-push
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Render compose
         run: |
-          IMAGE="${REGISTRY}/${IMAGE_NAME}:${{ steps.vars.outputs.sha_short }}"
+          IMAGE="${REGISTRY}/${IMAGE_NAME}:${{ needs.build-push.outputs.sha_short }}"
           cat > docker-compose.rendered.yml <<EOF2
           services:
             ccm:
