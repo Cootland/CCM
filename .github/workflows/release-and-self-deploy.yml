@@ -2,7 +2,7 @@ name: Release And Self Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 permissions:
