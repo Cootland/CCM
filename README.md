@@ -57,6 +57,14 @@ go run ./cmd/ccm -config ./examples/config.yml -listen :8080
 docker compose up -d
 ```
 
+The CCM container image is published on GHCR in a public package. You can pull and run it in your own instance:
+
+```bash
+docker pull ghcr.io/llllogan/ccm:latest
+```
+
+Using `:latest` is supported for self-hosted CCM instances when your stack has `pull: true`, so redeploy will fetch newer image versions.
+
 You can run CCM in two ways:
 
 - Minimal (no Caddy): expose CCM directly on a host port.
@@ -167,6 +175,7 @@ Expected health response:
 - `async: true`
 - `log_path` (resolved log path used for this redeploy)
 - The log contains timestamped steps (`config`, `pull`, `up`, `ps`) and exit codes.
+- Each redeploy run is delimited with clear `REDEPLOY RUN START` / `REDEPLOY RUN END` markers and a `run=<id>` tag so multiple runs in one file are easy to read.
 
 This protects self-redeploy from dying mid-request while CCM restarts.
 

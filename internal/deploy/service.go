@@ -91,10 +91,25 @@ func (s *Service) RedeployStack(ctx context.Context, stackID string) (map[string
 	if err != nil {
 		return nil, err
 	}
-	results, async, err := s.runComposeUpSafe(ctx, stack, deployPath, logPath)
+	runID := strconv.FormatInt(time.Now().UnixNano(), 10)
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "================================================================")
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "REDEPLOY RUN START")
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "================================================================")
+
+	results, async, err := s.runComposeUpSafe(ctx, stack, deployPath, logPath, runID)
 	if err != nil {
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("REDEPLOY RUN FAILED: %v", err))
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "REDEPLOY RUN END")
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "================================================================")
 		return nil, err
 	}
+	if async {
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "REDEPLOY RUN HANDOFF: detached worker running")
+	} else {
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "REDEPLOY RUN SUCCESS")
+	}
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "REDEPLOY RUN END")
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "================================================================")
 	out := map[string]any{
 		"stack":       stackID,
 		"target":      stack.TargetID,
@@ -150,27 +165,27 @@ func (s *Service) runComposeUp(ctx context.Context, stack *model.CCMStack, deplo
 	return results, nil
 }
 
-func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, deployPath, logPath string) ([]model.CommandResult, bool, error) {
+func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, deployPath, logPath, runID string) ([]model.CommandResult, bool, error) {
 	if !isLikelySelfCCMStack(stack) {
-		results, err := s.runComposeUpWithLog(ctx, stack, deployPath, logPath)
+		results, err := s.runComposeUpWithLog(ctx, stack, deployPath, logPath, runID)
 		return results, false, err
 	}
 
 	results := []model.CommandResult{}
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "Self-redeploy worker launch requested")
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Working directory: %s", deployPath))
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Flags: pull=%t remove_orphans=%t recreate=%s", stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate))
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "Self-redeploy worker launch requested")
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Working directory: %s", deployPath))
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Flags: pull=%t remove_orphans=%t recreate=%s", stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate))
 
-	script := buildRedeployScript(stack)
+	script := buildRedeployScript(stack, runID)
 	scriptPath := path.Join("/tmp", fmt.Sprintf("ccm-redeploy-%s-%d.sh", stack.ID, time.Now().UnixNano()))
 	if err := s.ssh.WriteFile(ctx, stack.TargetID, scriptPath, []byte(script), "0700", 10*time.Second); err != nil {
-		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Failed writing worker script: %v", err))
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Failed writing worker script: %v", err))
 		return nil, false, fmt.Errorf("write redeploy worker script: %w", err)
 	}
 	detachCmd := fmt.Sprintf("cd %q && nohup sh %q >> %q 2>&1 < /dev/null & echo $!", deployPath, scriptPath, logPath)
 	detachRes, err := s.ssh.RunCommand(ctx, stack.TargetID, detachCmd, 15*time.Second)
 	if err != nil {
-		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Failed launching worker: %v", err))
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Failed launching worker: %v", err))
 		return nil, false, err
 	}
 	results = append(results, detachRes)
@@ -180,14 +195,14 @@ func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, d
 		if msg == "" {
 			msg = "detached redeploy did not return a pid"
 		}
-		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Worker launch failed: %s", msg))
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Worker launch failed: %s", msg))
 		return results, false, fmt.Errorf("launch redeploy worker failed: %s", msg)
 	}
 	if _, perr := strconv.Atoi(pid); perr != nil {
-		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Worker launch returned invalid pid: %q", pid))
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Worker launch returned invalid pid: %q", pid))
 		return results, false, fmt.Errorf("launch redeploy worker returned invalid pid %q", pid)
 	}
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Worker launched with pid %s", pid))
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Worker launched with pid %s", pid))
 	checkCmd := fmt.Sprintf("kill -0 %s", pid)
 	checkRes, err := s.ssh.RunCommand(ctx, stack.TargetID, checkCmd, 5*time.Second)
 	if err != nil {
@@ -195,9 +210,9 @@ func (s *Service) runComposeUpSafe(ctx context.Context, stack *model.CCMStack, d
 	}
 	results = append(results, checkRes)
 	if checkRes.ExitCode == 0 {
-		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "Worker process is running")
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "Worker process is running")
 	} else {
-		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "Worker process exited quickly; inspect following lines for command results")
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "Worker process exited quickly; inspect following lines for command results")
 	}
 	return results, true, nil
 }
@@ -206,7 +221,7 @@ func isLikelySelfCCMStack(stack *model.CCMStack) bool {
 	return strings.EqualFold(stack.ID, "ccm")
 }
 
-func buildRedeployScript(stack *model.CCMStack) string {
+func buildRedeployScript(stack *model.CCMStack, runID string) string {
 	up := "docker compose up -d"
 	if stack.Flags.RemoveOrphans {
 		up += " --remove-orphans"
@@ -217,12 +232,12 @@ func buildRedeployScript(stack *model.CCMStack) string {
 	pullLine := ""
 	if stack.Flags.Pull {
 		pullLine = `
-printf '%s [%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "Running: docker compose pull"
+printf '%s [%s run=%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "` + runID + `" "Running: docker compose pull"
 docker compose pull
 rc=$?
-printf '%s [%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "docker compose pull exit=$rc"
+printf '%s [%s run=%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "` + runID + `" "docker compose pull exit=$rc"
 if [ "$rc" -ne 0 ]; then
-  printf '%s [%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "Redeploy failed during pull"
+  printf '%s [%s run=%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "` + runID + `" "Redeploy failed during pull"
   exit "$rc"
 fi
 `
@@ -230,31 +245,35 @@ fi
 
 	return fmt.Sprintf(`#!/bin/sh
 {
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Redeploy started"
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Working directory: $(pwd)"
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Flags: pull=%t remove_orphans=%t recreate=%s"
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Running: docker compose config -q"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "================================================================"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "REDEPLOY WORKER START"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Redeploy started"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Working directory: $(pwd)"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Flags: pull=%t remove_orphans=%t recreate=%s"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Running: docker compose config -q"
   docker compose config -q
   rc=$?
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "docker compose config exit=$rc"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "docker compose config exit=$rc"
   if [ "$rc" -ne 0 ]; then
-    printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Redeploy failed during config validation"
+    printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Redeploy failed during config validation"
     exit "$rc"
   fi
 %s
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Running: %s"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Running: %s"
   %s
   rc=$?
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "%s exit=$rc"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "%s exit=$rc"
   if [ "$rc" -ne 0 ]; then
-    printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Redeploy failed during up"
+    printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Redeploy failed during up"
     exit "$rc"
   fi
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Running: docker compose ps"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Running: docker compose ps"
   docker compose ps
-  printf '%%s [%%s] %%s\n' "$(date -Iseconds)" "%s" "Redeploy finished successfully"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Redeploy finished successfully"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "REDEPLOY WORKER END"
+  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "================================================================"
 }
-`, stack.ID, stack.ID, stack.ID, stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate, stack.ID, stack.ID, stack.ID, pullLine, stack.ID, up, up, stack.ID, up, stack.ID, stack.ID, stack.ID)
+`, stack.ID, runID, stack.ID, runID, stack.ID, runID, stack.ID, runID, stack.ID, runID, stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate, stack.ID, runID, stack.ID, runID, stack.ID, runID, pullLine, stack.ID, runID, up, up, stack.ID, runID, up, stack.ID, runID, stack.ID, runID, stack.ID, runID, stack.ID, runID)
 }
 
 func (s *Service) resolveRedeployLogPath(ctx context.Context, targetID, deployPath, stackID string) (string, error) {
@@ -280,24 +299,24 @@ func (s *Service) resolveRedeployLogPath(ctx context.Context, targetID, deployPa
 	return fallback, nil
 }
 
-func (s *Service) runComposeUpWithLog(ctx context.Context, stack *model.CCMStack, deployPath, logPath string) ([]model.CommandResult, error) {
+func (s *Service) runComposeUpWithLog(ctx context.Context, stack *model.CCMStack, deployPath, logPath, runID string) ([]model.CommandResult, error) {
 	results := []model.CommandResult{}
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "Redeploy started")
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Working directory: %s", deployPath))
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Flags: pull=%t remove_orphans=%t recreate=%s", stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate))
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "Redeploy started")
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Working directory: %s", deployPath))
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Flags: pull=%t remove_orphans=%t recreate=%s", stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate))
 
 	if stack.Flags.Pull {
 		cmd := fmt.Sprintf("cd %q && docker compose pull", deployPath)
-		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "Running: docker compose pull")
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "Running: docker compose pull")
 		res, err := s.ssh.RunCommand(ctx, stack.TargetID, cmd, 10*time.Minute)
 		if err != nil {
-			_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("docker compose pull failed to execute: %v", err))
+			_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("docker compose pull failed to execute: %v", err))
 			return nil, err
 		}
 		results = append(results, res)
-		_ = s.appendCommandResultToLog(ctx, stack, deployPath, logPath, "docker compose pull", res)
+		_ = s.appendCommandResultToLog(ctx, stack, deployPath, logPath, runID, "docker compose pull", res)
 		if res.ExitCode != 0 {
-			_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "Redeploy stopped after pull failure")
+			_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "Redeploy stopped after pull failure")
 			return results, nil
 		}
 	}
@@ -310,26 +329,26 @@ func (s *Service) runComposeUpWithLog(ctx context.Context, stack *model.CCMStack
 		up += " --force-recreate"
 	}
 	cmd := fmt.Sprintf("cd %q && %s", deployPath, up)
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("Running: %s", up))
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("Running: %s", up))
 	res, err := s.ssh.RunCommand(ctx, stack.TargetID, cmd, 10*time.Minute)
 	if err != nil {
-		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("%s failed to execute: %v", up, err))
+		_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("%s failed to execute: %v", up, err))
 		return nil, err
 	}
 	results = append(results, res)
-	_ = s.appendCommandResultToLog(ctx, stack, deployPath, logPath, up, res)
-	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "Redeploy finished")
+	_ = s.appendCommandResultToLog(ctx, stack, deployPath, logPath, runID, up, res)
+	_ = s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "Redeploy finished")
 	return results, nil
 }
 
-func (s *Service) appendCommandResultToLog(ctx context.Context, stack *model.CCMStack, deployPath, logPath, command string, res model.CommandResult) error {
-	if err := s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, fmt.Sprintf("%s exit=%d", command, res.ExitCode)); err != nil {
+func (s *Service) appendCommandResultToLog(ctx context.Context, stack *model.CCMStack, deployPath, logPath, runID, command string, res model.CommandResult) error {
+	if err := s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, fmt.Sprintf("%s exit=%d", command, res.ExitCode)); err != nil {
 		return err
 	}
 	stdout := strings.TrimSpace(res.Stdout)
 	if stdout != "" {
 		for _, line := range strings.Split(stdout, "\n") {
-			if err := s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "stdout: "+line); err != nil {
+			if err := s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "stdout: "+line); err != nil {
 				return err
 			}
 		}
@@ -337,7 +356,7 @@ func (s *Service) appendCommandResultToLog(ctx context.Context, stack *model.CCM
 	stderr := strings.TrimSpace(res.Stderr)
 	if stderr != "" {
 		for _, line := range strings.Split(stderr, "\n") {
-			if err := s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, "stderr: "+line); err != nil {
+			if err := s.appendRedeployLog(ctx, stack.TargetID, deployPath, logPath, stack.ID, runID, "stderr: "+line); err != nil {
 				return err
 			}
 		}
@@ -345,8 +364,8 @@ func (s *Service) appendCommandResultToLog(ctx context.Context, stack *model.CCM
 	return nil
 }
 
-func (s *Service) appendRedeployLog(ctx context.Context, targetID, deployPath, logPath, stackID, message string) error {
-	line := fmt.Sprintf("%s [%s] %s", time.Now().Format(time.RFC3339), stackID, message)
+func (s *Service) appendRedeployLog(ctx context.Context, targetID, deployPath, logPath, stackID, runID, message string) error {
+	line := fmt.Sprintf("%s [%s run=%s] %s", time.Now().Format(time.RFC3339), stackID, runID, message)
 	var cmd string
 	if path.IsAbs(logPath) {
 		cmd = fmt.Sprintf("printf '%%s\\n' %s >> %q", strconv.Quote(line), logPath)

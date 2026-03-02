@@ -1,0 +1,53 @@
+name: Deploy via CCM API
+
+on:
+  workflow_dispatch:
+    inputs:
+      stack_id:
+        description: "CCM stack id to redeploy"
+        required: false
+        default: "ccm"
+  workflow_run:
+    workflows: ["CI, build, publish"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, linux]
+    env:
+      CCM_URL: ${{ secrets.CCM_URL }}
+      CCM_AUTH_TOKEN: ${{ secrets.CCM_AUTH_TOKEN }}
+      INPUT_STACK_ID: ${{ github.event.inputs.stack_id }}
+    steps:
+      - name: Validate config and select stack
+        id: vars
+        shell: bash
+        run: |
+          if [ -z "${CCM_URL}" ]; then
+            echo "CCM_URL secret is required"
+            exit 1
+          fi
+          stack_id="${INPUT_STACK_ID:-ccm}"
+          echo "stack_id=${stack_id}" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger redeploy
+        shell: bash
+        env:
+          STACK_ID: ${{ steps.vars.outputs.stack_id }}
+        run: |
+          auth_args=()
+          if [ -n "${CCM_AUTH_TOKEN}" ]; then
+            auth_args=(-H "Authorization: Bearer ${CCM_AUTH_TOKEN}")
+          fi
+
+          curl -fsSL -X POST "${CCM_URL}/v1/compose/${STACK_ID}/redeploy" \
+            -H "Content-Type: application/json" \
+            "${auth_args[@]}" \
+            | tee redeploy-response.json
+
+          echo "Redeploy response:"
+          cat redeploy-response.json
