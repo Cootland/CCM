@@ -35,15 +35,10 @@ Optional: add Caddy in front of CCM for TLS. Add the `caddy` service from [`dock
 - `/opt/ccm/.env`
 ```env
 CLOUDFLARE_API_TOKEN=replace-me
-ACME_EMAIL=you@example.com
 ```
 
 - `/opt/ccm/Caddyfile`
 ```caddy
-{
-  email {$ACME_EMAIL}
-}
-
 ccm.example.internal {
   tls {
     dns cloudflare {env.CLOUDFLARE_API_TOKEN}
