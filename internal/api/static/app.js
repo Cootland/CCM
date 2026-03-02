@@ -47,13 +47,15 @@ function reconcileSelection() {
   resetSelectionUI();
 }
 
-async function fetchInventory({ silent = false } = {}) {
+async function fetchInventory({ silent = false, reconcile = true } = {}) {
   try {
     const res = await fetch('/v1/inventory');
     if (!res.ok) throw new Error(`inventory request failed (${res.status})`);
     const data = await res.json();
     inventory = data.items || [];
-    reconcileSelection();
+    if (reconcile) {
+      reconcileSelection();
+    }
     renderItems();
     return true;
   } catch (err) {
@@ -66,7 +68,7 @@ async function fetchInventory({ silent = false } = {}) {
 
 async function fetchInventoryWithRetry(attempts = 3, delayMs = 1500) {
   for (let i = 0; i < attempts; i += 1) {
-    const ok = await fetchInventory({ silent: true });
+    const ok = await fetchInventory({ silent: true, reconcile: true });
     if (ok) return true;
     if (i < attempts - 1) {
       await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -424,8 +426,8 @@ document.addEventListener('visibilitychange', () => {
   setStreamIndicator('inactive');
   tickClock();
   setInterval(tickClock, 1000);
-  await fetchInventory({ silent: true });
+  await fetchInventory({ silent: true, reconcile: false });
   setInterval(() => {
-    fetchInventory({ silent: true });
+    fetchInventory({ silent: true, reconcile: false });
   }, 4000);
 })();
