@@ -7,16 +7,16 @@ on:
         description: "CCM stack id to redeploy"
         required: false
         default: "ccm"
-  workflow_run:
-    workflows: ["CI, build, publish"]
-    types: [completed]
+  # workflow_run:
+  #   workflows: ["CI, build, publish"]
+  #   types: [completed]
 
 permissions:
   contents: read
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    # if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: [self-hosted, linux]
     env:
       CCM_URL: ${{ secrets.CCM_URL }}
