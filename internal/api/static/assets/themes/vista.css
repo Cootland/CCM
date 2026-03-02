@@ -1,58 +1,58 @@
 :root {
-  --bg: #88a7c6;
-  --bg-radial-start: #ceddef;
-  --bg-radial-end: #6483a5;
+  --bg: #7b99ba;
+  --bg-radial-start: #d8e5f3;
+  --bg-radial-end: #516f92;
 
-  --window: #dce7f3;
-  --panel: #edf4fb;
-  --text: #122236;
-  --muted: #46586f;
+  --window: rgba(228, 240, 252, 0.88);
+  --panel: rgba(244, 250, 255, 0.86);
+  --text: #10243a;
+  --muted: #465a73;
 
-  --line-dark: #89a1bd;
-  --line-deep: #58799f;
-  --line-mid: #b5c8dc;
-  --line-light: #f7fbff;
+  --line-dark: #6e8cac;
+  --line-deep: #41678f;
+  --line-mid: #a9c1d8;
+  --line-light: #f6fbff;
 
-  --titlebar-bg: linear-gradient(180deg, #e8f3ff 0%, #cce3fb 28%, #90bde8 52%, #5d97d0 53%, #4f85bb 100%);
-  --titlebar-text: #f6fbff;
-  --titlebar-right-opacity: 0.9;
+  --titlebar-bg: linear-gradient(180deg, #f2f9ff 0%, #d6ebff 22%, #8ec0eb 49%, #5a95cf 50%, #477db3 72%, #3b6c9e 100%);
+  --titlebar-text: #f5fbff;
+  --titlebar-right-opacity: 0.92;
 
-  --title-dot-border: #2c5b86;
+  --title-dot-border: #2f5f8d;
   --title-dot-connecting: #ffd447;
-  --title-dot-active: #79ff79;
-  --title-dot-inactive: #6c8daf;
+  --title-dot-active: #7af87a;
+  --title-dot-inactive: #6c8eaf;
 
-  --panel-title-bg: linear-gradient(180deg, #f8fcff 0%, #dceafd 100%);
-  --panel-title-text: #1f3b59;
+  --panel-title-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(210, 230, 248, 0.85) 100%);
+  --panel-title-text: #1f3f60;
 
-  --input-bg: #ffffff;
-  --list-bg: #f7fbff;
-  --item-hover-bg: #dfeeff;
-  --item-active-bg: linear-gradient(180deg, #8ec2f4 0%, #5f9fda 100%);
+  --input-bg: rgba(255, 255, 255, 0.95);
+  --list-bg: rgba(246, 252, 255, 0.9);
+  --item-hover-bg: rgba(212, 233, 255, 0.95);
+  --item-active-bg: linear-gradient(180deg, #9ad0ff 0%, #5fa7e6 52%, #4b8fd0 100%);
   --item-active-text: #fff;
-  --item-active-meta: #e7f2ff;
-  --item-child-bg: #ecf5ff;
-  --item-child-line: #86a8ca;
+  --item-active-meta: #ebf6ff;
+  --item-child-bg: rgba(233, 245, 255, 0.88);
+  --item-child-line: #8eb0d1;
 
-  --badge-bg: #e9f3ff;
-  --stat-bg: #f5faff;
+  --badge-bg: rgba(232, 244, 255, 0.92);
+  --stat-bg: rgba(246, 252, 255, 0.92);
 
-  --action-bg: #edf5ff;
-  --action-ok: #1f7a39;
-  --action-err: #a11f1f;
+  --action-bg: rgba(234, 245, 255, 0.94);
+  --action-ok: #1e7639;
+  --action-err: #a32121;
 
-  --button-bg: linear-gradient(180deg, #fafdff 0%, #d8ecff 42%, #9dc7ef 43%, #72abd9 100%);
-  --button-hover-bg: linear-gradient(180deg, #ffffff 0%, #e5f2ff 42%, #afd3f6 43%, #83b8e4 100%);
-  --button-active-bg: linear-gradient(180deg, #5a92c6 0%, #86b8e2 100%);
+  --button-bg: linear-gradient(180deg, #ffffff 0%, #ecf7ff 18%, #cce7ff 44%, #a4d1f5 45%, #79b4e4 76%, #5a98cd 100%);
+  --button-hover-bg: linear-gradient(180deg, #ffffff 0%, #f2faff 18%, #dbf0ff 44%, #b8dcf9 45%, #8ec2ec 76%, #6ca9db 100%);
+  --button-active-bg: linear-gradient(180deg, #5b94c8 0%, #7cb6e3 36%, #97caf0 70%, #77b0dd 100%);
 
-  --tab-active-bg: linear-gradient(180deg, #f9fdff 0%, #d6e9fd 100%);
+  --tab-active-bg: linear-gradient(180deg, #ffffff 0%, #e2f0ff 100%);
 
-  --logs-bg: #0d1520;
-  --logs-text: #86f78e;
-  --details-bg: #fcfeff;
-  --details-text: #1a2a3d;
+  --logs-bg: #0b1724;
+  --logs-text: #8df694;
+  --details-bg: rgba(252, 255, 255, 0.96);
+  --details-text: #1a2b40;
 
-  --status-bg: #dceafb;
+  --status-bg: rgba(221, 238, 255, 0.9);
 
   --font-ui: "Segoe UI", "Tahoma", "Verdana", sans-serif;
   --font-mono: "Consolas", "Lucida Console", "Courier New", monospace;
@@ -60,8 +60,9 @@
 
 body.theme-vista {
   background:
-    radial-gradient(1000px 420px at 18% 0%, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 70%),
-    linear-gradient(180deg, #bccfe5 0%, #89a9ca 56%, #6e8fb3 100%);
+    radial-gradient(1100px 520px at 12% -8%, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0) 75%),
+    radial-gradient(900px 500px at 100% 100%, rgba(70, 137, 201, 0.3) 0%, rgba(70, 137, 201, 0) 70%),
+    linear-gradient(180deg, #b8cde5 0%, #7899bc 58%, #5a79a0 100%);
 }
 
 .theme-vista .desktop-bg {
@@ -70,17 +71,35 @@ body.theme-vista {
 
 .theme-vista .vista-window {
   min-height: calc(100vh - 36px);
-  border: 1px solid #4f79a4;
+  border: 1px solid #3d638d;
   border-radius: 8px;
-  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.32), 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.34),
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 0 0 1px rgba(184, 220, 255, 0.45) inset;
   overflow: hidden;
-  background: linear-gradient(180deg, #dce7f3 0%, #d1deec 100%);
+  background: linear-gradient(180deg, rgba(220, 235, 250, 0.92) 0%, rgba(206, 224, 242, 0.9) 100%);
+  backdrop-filter: blur(3px);
 }
 
 .theme-vista .vista-titlebar {
   height: 36px;
-  border-bottom: 1px solid #4c78a3;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.42) inset;
+  border-bottom: 1px solid #3e6893;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45) inset,
+    0 -1px 0 rgba(26, 57, 88, 0.35) inset;
+  position: relative;
+}
+
+.theme-vista .vista-titlebar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 48%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.08) 100%);
+  pointer-events: none;
 }
 
 .theme-vista .vista-title-left {
@@ -89,7 +108,7 @@ body.theme-vista {
 
 .theme-vista .vista-title-text {
   font-weight: 600;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.32);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.38);
 }
 
 .theme-vista .vista-title-right {
@@ -97,12 +116,32 @@ body.theme-vista {
 }
 
 .theme-vista .vista-orb {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
-  border: 1px solid #2a5a86;
-  background: radial-gradient(circle at 35% 30%, #9fc3ea 0%, #6f9cca 60%, #4d7cac 100%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.38) inset, 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.28);
+  border: 1px solid #2f5f8d;
+  background: radial-gradient(circle at 32% 26%, #c6e2ff 0%, #82b3e3 45%, #5d8fbe 72%, #426f9d 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.theme-vista .vista-orb.is-connecting {
+  background: radial-gradient(circle at 32% 26%, #ffe792 0%, #ffcd57 45%, #f3ab23 72%, #bd7d0f 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.42) inset,
+    0 0 10px rgba(255, 203, 90, 0.78),
+    0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.theme-vista .vista-orb.is-active {
+  background: radial-gradient(circle at 32% 26%, #a8ffb4 0%, #5be983 46%, #33c95a 72%, #1f8e3f 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.42) inset,
+    0 0 10px rgba(88, 232, 125, 0.78),
+    0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .theme-vista .vista-app {
@@ -112,28 +151,40 @@ body.theme-vista {
 
 .theme-vista .panel-frame {
   border-radius: 7px;
-  border: 1px solid #8eaccb;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.62) inset;
+  border: 1px solid rgba(128, 164, 197, 0.95);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+  background: rgba(241, 249, 255, 0.84);
 }
 
 .theme-vista .panel-frame-inset {
   border-radius: 7px;
-  border: 1px solid #9cb5cf;
-  background: #f2f8ff;
+  border: 1px solid rgba(147, 178, 209, 0.95);
+  background: rgba(244, 250, 255, 0.88);
+}
+
+.theme-vista .vista-sidebar {
+  background:
+    linear-gradient(180deg, rgba(252, 255, 255, 0.92) 0%, rgba(228, 242, 255, 0.84) 100%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0, rgba(255, 255, 255, 0.08) 1px, rgba(44, 87, 125, 0.02) 1px, rgba(44, 87, 125, 0.02) 2px);
+}
+
+.theme-vista .vista-main {
+  background: linear-gradient(180deg, rgba(250, 253, 255, 0.92) 0%, rgba(237, 246, 255, 0.86) 100%);
 }
 
 .theme-vista .panel-title {
   border-radius: 6px;
-  border: 1px solid #9ab7d6;
+  border: 1px solid #9ab9d9;
   text-transform: none;
   letter-spacing: 0;
   font-size: 12px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.75) inset;
 }
 
 .theme-vista #search {
   border-radius: 6px;
   border: 1px solid #8faecc;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.82) inset;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.84) inset;
 }
 
 .theme-vista .items {
@@ -162,14 +213,30 @@ body.theme-vista {
 
 .theme-vista button {
   border-radius: 6px;
-  border: 1px solid #6f97be;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.52) inset, 0 1px 1px rgba(0, 0, 0, 0.14);
-  color: #163454;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid #5f8fb8;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.62) inset,
+    0 -1px 0 rgba(53, 98, 140, 0.22) inset,
+    0 1px 1px rgba(0, 0, 0, 0.16);
+  color: #143a60;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
+  position: relative;
+}
+
+.theme-vista button::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 2px;
+  height: 45%;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.14) 100%);
+  pointer-events: none;
 }
 
 .theme-vista .tabs {
-  background: linear-gradient(180deg, #edf5fe 0%, #dceafa 100%);
+  background: linear-gradient(180deg, rgba(239, 248, 255, 0.95) 0%, rgba(220, 235, 251, 0.88) 100%);
 }
 
 .theme-vista .tab {
@@ -183,11 +250,11 @@ body.theme-vista {
 }
 
 .theme-vista .vista-panel {
-  background: #f4f9ff;
+  background: rgba(244, 250, 255, 0.9);
 }
 
 .theme-vista .vista-log-controls {
-  background: linear-gradient(180deg, #f5fafe 0%, #e2eefb 100%);
+  background: linear-gradient(180deg, rgba(245, 250, 254, 0.96) 0%, rgba(226, 238, 251, 0.88) 100%);
   border-bottom: 1px solid #b4c9de;
 }
 
@@ -203,7 +270,7 @@ body.theme-vista {
 
 .theme-vista .vista-statusbar {
   border-top: 1px solid #7395ba;
-  background: linear-gradient(180deg, #e6f1fd 0%, #d0e2f6 100%);
+  background: linear-gradient(180deg, rgba(230, 241, 253, 0.94) 0%, rgba(208, 226, 246, 0.9) 100%);
 }
 
 .theme-vista .status-segment {
