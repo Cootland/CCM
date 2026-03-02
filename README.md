@@ -147,7 +147,7 @@ Then CCM runs compose (`pull`/`up`) according to stack flags.
 
 ### How `.env` is built from secrets and `env.json`
 
-It is possible to hold multiple compose stacks in the same repo and keep their secrets separate. Create a GitHub environment per stack to store its specific secrets, and run the Workflow against that environment to grab its specific secrets. Share secrets can be stored at the repo level and will also be included.
+It is possible to hold multiple compose stacks in the same repo and keep their secrets separate. Create a GitHub environment per stack to store its specific secrets, and run a GitHub workflow against that environment to include those secrets in the .env file. Shared secrets can be stored at the repo level and will also be included.
 
 #### Recommended GitHub pattern:
 
