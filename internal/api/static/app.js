@@ -8,11 +8,55 @@ const expandedCompose = new Set();
 
 const $ = (id) => document.getElementById(id);
 
-async function fetchInventory() {
-  const res = await fetch('/v1/inventory');
-  const data = await res.json();
-  inventory = data.items || [];
-  renderItems();
+function resetSelectionUI() {
+  selected = null;
+  stopLogs();
+  $('title').textContent = 'Select an item';
+  $('subtitle').textContent = 'No host machine selected';
+  $('status').textContent = 'idle';
+}
+
+function reconcileSelection() {
+  if (!selected) return;
+  const byID = inventory.find((i) => i.id === selected.id && i.type === selected.type);
+  if (byID) {
+    selected = byID;
+    return;
+  }
+  const byIdentity = inventory.find((i) => i.type === selected.type && i.name === selected.name && i.target_id === selected.target_id);
+  if (byIdentity) {
+    selected = byIdentity;
+    return;
+  }
+  resetSelectionUI();
+}
+
+async function fetchInventory({ silent = false } = {}) {
+  try {
+    const res = await fetch('/v1/inventory');
+    if (!res.ok) throw new Error(`inventory request failed (${res.status})`);
+    const data = await res.json();
+    inventory = data.items || [];
+    reconcileSelection();
+    renderItems();
+    return true;
+  } catch (err) {
+    if (!silent) {
+      setActionResult(`Inventory refresh failed: ${err?.message || String(err)}`, true);
+    }
+    return false;
+  }
+}
+
+async function fetchInventoryWithRetry(attempts = 3, delayMs = 1500) {
+  for (let i = 0; i < attempts; i += 1) {
+    const ok = await fetchInventory({ silent: true });
+    if (ok) return true;
+    if (i < attempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  return false;
 }
 
 function renderItems() {
@@ -78,6 +122,16 @@ async function selectItem(item) {
   if (item.type === 'container') {
     const res = await fetch(`/v1/containers/${encodeURIComponent(item.id)}`);
     if (!res.ok) {
+      if (res.status === 404) {
+        const refreshed = await fetchInventory({ silent: true });
+        if (refreshed) {
+          const replacement = inventory.find((i) => i.type === 'container' && i.name === item.name && i.target_id === item.target_id);
+          if (replacement && replacement.id !== item.id) {
+            await selectItem(replacement);
+            return;
+          }
+        }
+      }
       $('details').textContent = `Failed to load container details (${res.status})`;
       return;
     }
@@ -312,7 +366,12 @@ $('btnRedeploy').onclick = async () => {
       const recovered = await waitForServiceRecovery();
       if (recovered) {
         setActionResult('CCM is back online after redeploy. Refreshing inventory...');
-        await fetchInventory();
+        const ok = await fetchInventoryWithRetry(5, 1500);
+        if (ok) {
+          setActionResult('CCM is back online after redeploy.');
+        } else {
+          setActionResult('CCM recovered, but inventory refresh is still failing. Try again in a few seconds.', true);
+        }
       } else {
         setActionResult('CCM did not recover within 45s after redeploy attempt.', true);
       }
@@ -349,6 +408,8 @@ document.addEventListener('visibilitychange', () => {
   setStreamIndicator('inactive');
   tickClock();
   setInterval(tickClock, 1000);
-  await fetchInventory();
-  setInterval(fetchInventory, 4000);
+  await fetchInventory({ silent: true });
+  setInterval(() => {
+    fetchInventory({ silent: true });
+  }, 4000);
 })();
