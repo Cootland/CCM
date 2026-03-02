@@ -6,6 +6,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/fs"
 	"net/http"
 	"strconv"
@@ -23,16 +24,54 @@ import (
 //go:embed static/*
 var staticFS embed.FS
 
+const defaultTheme = "win98"
+
 type Router struct {
 	cfg     *config.Config
 	inv     *inventory.Service
 	deploy  *deploy.Service
 	control *control.Service
 	logs    *logs.Service
+	index   *template.Template
+	rawLogs []byte
+	themes  map[string]struct{}
 }
 
 func NewRouter(cfg *config.Config, inv *inventory.Service, d *deploy.Service, c *control.Service, l *logs.Service) http.Handler {
-	r := &Router{cfg: cfg, inv: inv, deploy: d, control: c, logs: l}
+	root, err := fs.Sub(staticFS, "static")
+	if err != nil {
+		panic("static root missing")
+	}
+	index, err := template.ParseFS(root, "index.html")
+	if err != nil {
+		panic("index template parse failed")
+	}
+	rawLogs, err := fs.ReadFile(root, "raw-logs.html")
+	if err != nil {
+		panic("raw logs page missing")
+	}
+	assetsFS, err := fs.Sub(root, "assets")
+	if err != nil {
+		panic("assets missing")
+	}
+	themes, err := loadThemes(assetsFS)
+	if err != nil {
+		panic("themes missing")
+	}
+	if _, ok := themes[defaultTheme]; !ok {
+		panic("default theme missing")
+	}
+
+	r := &Router{
+		cfg:     cfg,
+		inv:     inv,
+		deploy:  d,
+		control: c,
+		logs:    l,
+		index:   index,
+		rawLogs: rawLogs,
+		themes:  themes,
+	}
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/healthz", r.health)
@@ -43,10 +82,70 @@ func NewRouter(cfg *config.Config, inv *inventory.Service, d *deploy.Service, c 
 	mux.HandleFunc("/v1/compose/", r.composeRoute)
 	mux.HandleFunc("/v1/deploy", r.deployRoute)
 
-	root, _ := fs.Sub(staticFS, "static")
-	mux.Handle("/", http.FileServer(http.FS(root)))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.FS(assetsFS))))
+	mux.HandleFunc("/raw-logs.html", r.rawLogsPage)
+	mux.HandleFunc("/", r.uiRoute)
 
 	return mux
+}
+
+func (r *Router) rawLogsPage(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		util.WriteErr(w, 405, "method not allowed")
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = w.Write(r.rawLogs)
+}
+
+func (r *Router) uiRoute(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		util.WriteErr(w, 404, "not found")
+		return
+	}
+
+	theme := defaultTheme
+	if req.URL.Path != "/" {
+		path := strings.TrimPrefix(req.URL.Path, "/")
+		if path == "" || strings.Contains(path, "/") {
+			util.WriteErr(w, 404, "not found")
+			return
+		}
+		if _, ok := r.themes[path]; !ok {
+			util.WriteErr(w, 404, "not found")
+			return
+		}
+		theme = path
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := r.index.Execute(w, map[string]string{"Theme": theme}); err != nil {
+		util.WriteErr(w, 500, "template render failed")
+		return
+	}
+}
+
+func loadThemes(assetsFS fs.FS) (map[string]struct{}, error) {
+	entries, err := fs.ReadDir(assetsFS, "themes")
+	if err != nil {
+		return nil, err
+	}
+	themes := map[string]struct{}{}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if !strings.HasSuffix(name, ".css") {
+			continue
+		}
+		theme := strings.TrimSuffix(name, ".css")
+		if strings.TrimSpace(theme) == "" {
+			continue
+		}
+		themes[theme] = struct{}{}
+	}
+	return themes, nil
 }
 
 func (r *Router) health(w http.ResponseWriter, _ *http.Request) {
