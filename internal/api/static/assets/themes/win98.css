@@ -1,0 +1,59 @@
+:root {
+  --bg: #008080;
+  --bg-radial-start: #009a9a;
+  --bg-radial-end: #006767;
+
+  --window: #c0c0c0;
+  --panel: #d4d0c8;
+  --text: #111;
+  --muted: #3e3e3e;
+
+  --line-dark: #808080;
+  --line-deep: #404040;
+  --line-mid: #9a9a9a;
+  --line-light: #ffffff;
+
+  --titlebar-bg: linear-gradient(90deg, #00006f 0%, #0e2f9a 60%, #4a77de 100%);
+  --titlebar-text: #fff;
+  --titlebar-right-opacity: 0.95;
+
+  --title-dot-border: #043100;
+  --title-dot-connecting: #ffd447;
+  --title-dot-active: #2eff2e;
+  --title-dot-inactive: #7f7f7f;
+
+  --panel-title-bg: linear-gradient(90deg, #1d1d1d 0%, #636363 100%);
+  --panel-title-text: #fff;
+
+  --input-bg: #fff;
+  --list-bg: #fff;
+  --item-hover-bg: #e8efff;
+  --item-active-bg: #000080;
+  --item-active-text: #fff;
+  --item-active-meta: #d8e6ff;
+  --item-child-bg: #f7f7f7;
+  --item-child-line: #6d6d6d;
+
+  --badge-bg: #f3f3f3;
+  --stat-bg: #efefef;
+
+  --action-bg: #ececec;
+  --action-ok: #0a5f0a;
+  --action-err: #8f1111;
+
+  --button-bg: #d4d0c8;
+  --button-hover-bg: #e5e2db;
+  --button-active-bg: #cbc6bd;
+
+  --tab-active-bg: #fff;
+
+  --logs-bg: #020202;
+  --logs-text: #45f745;
+  --details-bg: #f8f8f8;
+  --details-text: #141414;
+
+  --status-bg: #dbdbdb;
+
+  --font-ui: "Tahoma", "MS Sans Serif", "Segoe UI", sans-serif;
+  --font-mono: "Lucida Console", "Courier New", monospace;
+}

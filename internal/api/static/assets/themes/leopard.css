@@ -1,0 +1,346 @@
+:root {
+  --bg: #97a6bb;
+  --bg-radial-start: #d2dae6;
+  --bg-radial-end: #71829a;
+
+  --window: #cfd3d8;
+  --panel: #e8ebef;
+  --text: #17191c;
+  --muted: #545b65;
+
+  --line-dark: #9da4ad;
+  --line-deep: #6f7883;
+  --line-mid: #bac1cb;
+  --line-light: #f7f9fc;
+
+  --titlebar-bg: linear-gradient(180deg, #c6ccd3 0%, #afb7c0 20%, #959fab 49%, #7e8794 50%, #6a7380 78%, #5c6572 100%);
+  --titlebar-text: #eef3f8;
+  --titlebar-right-opacity: 0.88;
+
+  --title-dot-border: #545960;
+  --title-dot-connecting: #f5bf2f;
+  --title-dot-active: #35c759;
+  --title-dot-inactive: #7f8791;
+
+  --panel-title-bg: linear-gradient(180deg, #f6f8fb 0%, #dce2ea 100%);
+  --panel-title-text: #2f3741;
+
+  --input-bg: #fbfdff;
+  --list-bg: #f7f9fc;
+  --item-hover-bg: #d9e6f5;
+  --item-active-bg: linear-gradient(180deg, #6ba0d5 0%, #4a86c4 100%);
+  --item-active-text: #ffffff;
+  --item-active-meta: #e5f1ff;
+  --item-child-bg: #edf2f8;
+  --item-child-line: #8ea1b6;
+
+  --badge-bg: #e8edf4;
+  --stat-bg: #f6f8fb;
+
+  --action-bg: #edf1f6;
+  --action-ok: #226f3a;
+  --action-err: #a62424;
+
+  --button-bg: linear-gradient(180deg, #eef7ff 0%, #c5e1fb 22%, #8dc0ee 48%, #5fa3de 49%, #3e85c5 76%, #2f6aa2 100%);
+  --button-hover-bg: linear-gradient(180deg, #f5fbff 0%, #d7ecff 22%, #9accf6 48%, #6aafe8 49%, #4a93d2 76%, #3879b4 100%);
+  --button-active-bg: linear-gradient(180deg, #2a659b 0%, #3e80bb 32%, #4f95ce 60%, #3b77af 100%);
+
+  --tab-active-bg: linear-gradient(180deg, #dbeaf8 0%, #abc9e7 100%);
+
+  --logs-bg: #0f1318;
+  --logs-text: #8df593;
+  --details-bg: #fbfcfe;
+  --details-text: #1f242b;
+
+  --status-bg: #dfe4ec;
+
+  --font-ui: "Lucida Grande", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  --font-mono: "Menlo", "Monaco", "Courier New", monospace;
+}
+
+body.theme-leopard {
+  background:
+    radial-gradient(1200px 500px at 20% 0%, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0) 65%),
+    linear-gradient(180deg, #c4cddd 0%, #8fa1b9 52%, #6f829a 100%);
+}
+
+.theme-leopard .desktop-bg {
+  padding: 20px;
+}
+
+.theme-leopard .leopard-window {
+  min-height: calc(100vh - 40px);
+  border: 1px solid #5f6670;
+  border-radius: 8px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.45) inset;
+  overflow: hidden;
+  background: #d9dee5;
+}
+
+.theme-leopard .leopard-titlebar {
+  height: 34px;
+  border-bottom: 1px solid #555d67;
+  justify-content: center;
+  position: relative;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.42) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.28) inset;
+  letter-spacing: 0;
+}
+
+.theme-leopard .leopard-titlebar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 48%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.08) 100%);
+  pointer-events: none;
+}
+
+.theme-leopard .leopard-traffic {
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  height: 12px;
+}
+
+.theme-leopard .leopard-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.38);
+  position: relative;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(255, 255, 255, 0.22) inset;
+  transition: background-color 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.theme-leopard .leopard-dot::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 1px;
+  height: 36%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.18) 100%);
+  pointer-events: none;
+}
+
+.theme-leopard .leopard-dot-close { background: radial-gradient(circle at 35% 30%, #8c7c79 0%, #6d6564 58%, #504847 100%); }
+.theme-leopard .leopard-dot-min { background: radial-gradient(circle at 35% 30%, #867f66 0%, #66624f 58%, #4e4a3b 100%); }
+.theme-leopard .leopard-dot-zoom { background: radial-gradient(circle at 35% 30%, #6f856f 0%, #536754 58%, #3e4d3f 100%); }
+
+.theme-leopard .leopard-dot-min.is-connecting {
+  background: radial-gradient(circle at 35% 30%, #ffe184 0%, #ffc34a 38%, #f1a61f 72%, #bb7c10 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+    0 0 10px rgba(255, 192, 63, 0.85),
+    0 1px 1px rgba(0, 0, 0, 0.35);
+  filter: saturate(1.08);
+}
+
+.theme-leopard .leopard-dot-zoom.is-active {
+  background: radial-gradient(circle at 35% 30%, #8cf8a8 0%, #4fe278 38%, #2fbe53 72%, #1d8739 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+    0 0 10px rgba(69, 222, 112, 0.82),
+    0 1px 1px rgba(0, 0, 0, 0.35);
+  filter: saturate(1.06);
+}
+
+.theme-leopard .leopard-stream-proxy {
+  display: none;
+}
+
+.theme-leopard .leopard-window-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f3f7fb;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.45);
+}
+
+.theme-leopard .leopard-app-name {
+  position: absolute;
+  right: 12px;
+  font-size: 11px;
+}
+
+.theme-leopard .leopard-app {
+  gap: 0;
+  padding: 0;
+  grid-template-columns: 312px 1fr;
+}
+
+.theme-leopard .leopard-sidebar {
+  border: 0;
+  border-right: 1px solid #9ca5b1;
+  border-radius: 0;
+  box-shadow: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0, rgba(255, 255, 255, 0.1) 1px, rgba(0, 0, 0, 0.02) 1px, rgba(0, 0, 0, 0.02) 2px),
+    linear-gradient(180deg, #e3e8ef 0%, #ccd4de 100%);
+}
+
+.theme-leopard .leopard-main {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: linear-gradient(180deg, #f7f9fc 0%, #eceff3 100%);
+}
+
+.theme-leopard .panel-title {
+  border-radius: 8px;
+  border: 1px solid #9ca7b5;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.theme-leopard #search {
+  border-radius: 12px;
+  border: 1px solid #9aa5b3;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 1px 2px rgba(0, 0, 0, 0.08);
+  padding: 7px 11px;
+}
+
+.theme-leopard .items {
+  border-radius: 8px;
+  border: 1px solid #a6b0bc;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) inset;
+}
+
+.theme-leopard .item {
+  border-bottom: 1px solid #d7dee7;
+}
+
+.theme-leopard .item.active {
+  background: var(--item-active-bg);
+}
+
+.theme-leopard .item-child {
+  border-left: 0;
+  padding-left: 30px;
+}
+
+.theme-leopard .leopard-header {
+  padding: 3px 2px;
+}
+
+.theme-leopard .header h1 {
+  font-size: 23px;
+  font-weight: 600;
+}
+
+.theme-leopard .badge {
+  border-radius: 999px;
+  border: 1px solid #9ba5b1;
+  box-shadow: 0 1px 0 #fff inset;
+  text-transform: none;
+}
+
+.theme-leopard .stat {
+  border-radius: 9px;
+  border: 1px solid #b2bcc7;
+  box-shadow: 0 1px 0 #fff inset;
+}
+
+.theme-leopard button {
+  border-radius: 15px;
+  border: 1px solid #2f6a9f;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.55) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.18) inset,
+    0 1px 1px rgba(0, 0, 0, 0.18);
+  padding: 6px 14px;
+  color: #f2f8ff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.theme-leopard button::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 2px;
+  height: 44%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.46) 0%, rgba(255, 255, 255, 0.1) 100%);
+  pointer-events: none;
+}
+
+.theme-leopard button:hover {
+  background: var(--button-hover-bg);
+}
+
+.theme-leopard button:active {
+  background: var(--button-active-bg);
+  border-color: #275a88;
+}
+
+.theme-leopard .leopard-tabs {
+  border: 0;
+  background: transparent;
+  padding: 4px 0;
+}
+
+.theme-leopard .tab {
+  border-radius: 12px;
+  border: 1px solid #9da8b5;
+  background: linear-gradient(180deg, #f4f6f9 0%, #dde3eb 100%);
+  color: #24303e;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.theme-leopard .tab.active {
+  border-color: #7a95b1;
+  background: var(--tab-active-bg);
+  color: #12263d;
+}
+
+.theme-leopard .leopard-panel {
+  border-radius: 8px;
+  border: 1px solid #aeb8c4;
+  background: #f4f7fb;
+}
+
+.theme-leopard .leopard-log-controls {
+  border-bottom: 1px solid #c7d0da;
+  background: linear-gradient(180deg, #f5f7fa 0%, #e8edf3 100%);
+}
+
+.theme-leopard .action-result {
+  border-radius: 8px;
+  border: 1px solid #b0bac6;
+}
+
+.theme-leopard .logs,
+.theme-leopard #details {
+  border-top: 0;
+}
+
+.theme-leopard .leopard-statusbar {
+  border-top: 1px solid #666f7a;
+  background: linear-gradient(180deg, #d4dae3 0%, #bcc5d2 100%);
+}
+
+.theme-leopard .status-segment {
+  border-radius: 8px;
+  border: 1px solid #98a3b0;
+}
+
+@media (max-width: 980px) {
+  .theme-leopard .leopard-app {
+    grid-template-columns: 1fr;
+  }
+  .theme-leopard .leopard-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #9ca5b1;
+  }
+}
