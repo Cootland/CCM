@@ -191,24 +191,24 @@ function renderStats(items) {
 
 function setStreamIndicator(state) {
   const dot = $('streamDot');
-  const lionDotMin = $('lionDotMin');
-  const lionDotZoom = $('lionDotZoom');
+  const leopardDotMin = $('leopardDotMin') || $('lionDotMin');
+  const leopardDotZoom = $('leopardDotZoom') || $('lionDotZoom');
   const title = state === 'active'
     ? 'Log stream connected'
     : (state === 'connecting' ? 'Log stream reconnecting' : 'Log stream disconnected');
 
-  if (lionDotMin && lionDotZoom) {
-    lionDotMin.classList.remove('is-connecting');
-    lionDotZoom.classList.remove('is-active');
+  if (leopardDotMin && leopardDotZoom) {
+    leopardDotMin.classList.remove('is-connecting');
+    leopardDotZoom.classList.remove('is-active');
 
     if (state === 'connecting') {
-      lionDotMin.classList.add('is-connecting');
+      leopardDotMin.classList.add('is-connecting');
     } else if (state === 'active') {
-      lionDotZoom.classList.add('is-active');
+      leopardDotZoom.classList.add('is-active');
     }
 
-    lionDotMin.title = title;
-    lionDotZoom.title = title;
+    leopardDotMin.title = title;
+    leopardDotZoom.title = title;
     if (dot) dot.title = title;
     return;
   }
