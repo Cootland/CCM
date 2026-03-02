@@ -81,6 +81,7 @@ type DeployRequest struct {
 	EnvFile    string            `json:"env_file,omitempty"`
 	Env        map[string]string `json:"env,omitempty"`
 	Caddyfile  string            `json:"caddyfile,omitempty"`
+	RunCompose *bool             `json:"run_compose,omitempty"`
 }
 
 type CommandResult struct {

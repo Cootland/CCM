@@ -45,13 +45,15 @@ jobs:
             --rawfile compose_yml docker-compose.yml \
             --rawfile caddyfile caddy/Caddyfile.example \
             --arg env_file "${env_file_content}" \
+            --argjson run_compose false \
             '{
               ccm_stack: $ccm_stack,
               repo: $repo,
               sha: $sha,
               compose_yml: $compose_yml,
               caddyfile: $caddyfile,
-              env_file: $env_file
+              env_file: $env_file,
+              run_compose: $run_compose
             }' > deploy-payload.json
 
           deploy_code="$(

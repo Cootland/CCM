@@ -191,6 +191,9 @@ If your workflow uses only merged `env` (no `env_file`), the final `.env` is gen
 - `env_file` optional raw `.env` text.
 - `env` optional key/value map merged into `.env` (overrides duplicate keys from `env_file`).
 - `caddyfile` optional Caddyfile content.
+- `run_compose` optional boolean.
+  - For non-`ccm` stacks, default is `true`.
+  - For `ccm` stack, default is `false` (write files only; use `POST /v1/compose/ccm/redeploy` to apply safely).
 
 Reference payloads:
 

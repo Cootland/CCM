@@ -63,9 +63,17 @@ func (s *Service) Deploy(ctx context.Context, req model.DeployRequest) (map[stri
 		}
 	}
 
-	results, err := s.runComposeUp(ctx, stack, deployPath)
-	if err != nil {
-		return nil, err
+	runCompose := !isLikelySelfCCMStack(stack)
+	if req.RunCompose != nil {
+		runCompose = *req.RunCompose
+	}
+	results := []model.CommandResult{}
+	if runCompose {
+		var err error
+		results, err = s.runComposeUp(ctx, stack, deployPath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return map[string]any{
@@ -76,6 +84,7 @@ func (s *Service) Deploy(ctx context.Context, req model.DeployRequest) (map[stri
 		"sha":         req.SHA,
 		"env_count":   envCount,
 		"caddyfile":   strings.TrimSpace(req.Caddyfile) != "",
+		"run_compose": runCompose,
 		"steps":       results,
 	}, nil
 }
