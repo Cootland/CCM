@@ -229,51 +229,60 @@ func buildRedeployScript(stack *model.CCMStack, runID string) string {
 	if strings.EqualFold(stack.Flags.Recreate, "force") {
 		up += " --force-recreate"
 	}
-	pullLine := ""
-	if stack.Flags.Pull {
-		pullLine = `
-printf '%s [%s run=%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "` + runID + `" "Running: docker compose pull"
-docker compose pull
-rc=$?
-printf '%s [%s run=%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "` + runID + `" "docker compose pull exit=$rc"
-if [ "$rc" -ne 0 ]; then
-  printf '%s [%s run=%s] %s\n' "$(date -Iseconds)" "` + stack.ID + `" "` + runID + `" "Redeploy failed during pull"
-  exit "$rc"
-fi
-`
+	logLine := func(msg string) string {
+		return fmt.Sprintf(`printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" %s %s %s`, strconv.Quote(stack.ID), strconv.Quote(runID), strconv.Quote(msg))
 	}
 
-	return fmt.Sprintf(`#!/bin/sh
-{
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "================================================================"
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "REDEPLOY WORKER START"
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Redeploy started"
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Working directory: $(pwd)"
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Flags: pull=%t remove_orphans=%t recreate=%s"
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Running: docker compose config -q"
-  docker compose config -q
-  rc=$?
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "docker compose config exit=$rc"
-  if [ "$rc" -ne 0 ]; then
-    printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Redeploy failed during config validation"
-    exit "$rc"
-  fi
-%s
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Running: %s"
-  %s
-  rc=$?
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "%s exit=$rc"
-  if [ "$rc" -ne 0 ]; then
-    printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Redeploy failed during up"
-    exit "$rc"
-  fi
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Running: docker compose ps"
-  docker compose ps
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "Redeploy finished successfully"
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "REDEPLOY WORKER END"
-  printf '%%s [%%s run=%%s] %%s\n' "$(date -Iseconds)" "%s" "%s" "================================================================"
-}
-`, stack.ID, runID, stack.ID, runID, stack.ID, runID, stack.ID, runID, stack.ID, runID, stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate, stack.ID, runID, stack.ID, runID, stack.ID, runID, pullLine, stack.ID, runID, up, up, stack.ID, runID, up, stack.ID, runID, stack.ID, runID, stack.ID, runID, stack.ID, runID)
+	lines := []string{
+		"#!/bin/sh",
+		"{",
+		"  " + logLine("================================================================"),
+		"  " + logLine("REDEPLOY WORKER START"),
+		"  " + logLine("Redeploy started"),
+		"  " + logLine("Working directory: $(pwd)"),
+		"  " + logLine(fmt.Sprintf("Flags: pull=%t remove_orphans=%t recreate=%s", stack.Flags.Pull, stack.Flags.RemoveOrphans, stack.Flags.Recreate)),
+		"  " + logLine("Running: docker compose config -q"),
+		"  docker compose config -q",
+		"  rc=$?",
+		"  " + logLine("docker compose config exit=$rc"),
+		"  if [ \"$rc\" -ne 0 ]; then",
+		"    " + logLine("Redeploy failed during config validation"),
+		"    exit \"$rc\"",
+		"  fi",
+	}
+
+	if stack.Flags.Pull {
+		lines = append(lines,
+			"  "+logLine("Running: docker compose pull"),
+			"  docker compose pull",
+			"  rc=$?",
+			"  "+logLine("docker compose pull exit=$rc"),
+			"  if [ \"$rc\" -ne 0 ]; then",
+			"    "+logLine("Redeploy failed during pull"),
+			"    exit \"$rc\"",
+			"  fi",
+		)
+	}
+
+	lines = append(lines,
+		"  "+logLine("Running: "+up),
+		"  "+up,
+		"  rc=$?",
+		"  "+logLine(up+" exit=$rc"),
+		"  if [ \"$rc\" -ne 0 ]; then",
+		"    "+logLine("Redeploy failed during up"),
+		"    exit \"$rc\"",
+		"  fi",
+		"  "+logLine("Running: docker compose ps"),
+		"  docker compose ps",
+		"  "+logLine("Redeploy finished successfully"),
+		"  "+logLine("REDEPLOY WORKER END"),
+		"  "+logLine("================================================================"),
+		"}",
+		"",
+	)
+
+	return strings.Join(lines, "\n")
 }
 
 func (s *Service) resolveRedeployLogPath(ctx context.Context, targetID, deployPath, stackID string) (string, error) {
