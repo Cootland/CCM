@@ -34,6 +34,7 @@ Key fields:
 Important:
 - If `pull: false`, redeploy will not fetch new remote images.
 - For newcomers, keep `pull: true` for your `ccm` stack.
+- Self-redeploy special handling is tied to stack id `ccm`. If you want safe detached self-redeploy behavior, name that stack `ccm`.
 
 ## First-time setup checklist
 
@@ -157,12 +158,15 @@ Expected health response:
 `POST /v1/compose/{id}/redeploy`:
 - Uses the stack's resolved flags (`pull`, `remove_orphans`, `recreate`).
 - For non-CCM stacks: runs compose synchronously.
-- For self-targeted CCM stack (`target: self`): starts a detached remote compose job and returns:
+- For stack id `ccm`: starts a detached remote compose job and returns:
 - `async: true`
 - `log_path` (log filename in the stack deploy directory, usually `ccm-redeploy-<stack>-<timestamp>.log`)
 - The log contains timestamped steps (`config`, `pull`, `up`, `ps`) and exit codes.
 
 This protects self-redeploy from dying mid-request while CCM restarts.
+
+Note:
+- The stack id must be exactly `ccm` for this behavior. Any other stack id is treated as a normal synchronous redeploy.
 
 ## Self-redeploy workflow (GitHub Actions)
 
