@@ -87,16 +87,48 @@ body.theme-bloomi {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 24px;
+  height: 30px;
   padding: 0 8px;
   background: linear-gradient(180deg, #111722 0%, #0a1018 100%);
   color: #d5def0;
   border-bottom: 1px solid #2c3f62;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
-.theme-bloomi .bloomi-sep {
-  color: #6f84aa;
-  margin: 0 6px;
+.theme-bloomi .bloomi-top-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.theme-bloomi .bloomi-title-live {
+  color: #f0b04a;
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.theme-bloomi .bloomi-top-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid #4a74bc;
+  background: #123a78;
+  color: #ebf2ff;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.theme-bloomi .bloomi-subtitle {
+  display: none;
 }
 
 .theme-bloomi .bloomi-titlebar {
@@ -267,18 +299,6 @@ body.theme-bloomi {
   background: #000000;
 }
 
-.theme-bloomi .header {
-  padding: 3px 6px;
-  border: 1px solid #2b5296;
-  background: #06112a;
-}
-
-.theme-bloomi .header h1 {
-  font-size: 24px;
-  color: #f0b04a;
-  font-weight: 700;
-}
-
 .theme-bloomi .muted {
   color: #8ca2ca;
 }
@@ -419,15 +439,12 @@ body.theme-bloomi {
 }
 
 @media (max-width: 980px) {
-  .theme-bloomi .bloomi-brand {
-    font-size: 26px;
+  .theme-bloomi .bloomi-title-live {
+    font-size: 13px;
   }
-  .theme-bloomi .bloomi-market,
-  .theme-bloomi .bloomi-title-right {
-    font-size: 16px;
-  }
-  .theme-bloomi .bloomi-market {
-    display: none;
+  .theme-bloomi .bloomi-top-status {
+    min-width: 84px;
+    font-size: 11px;
   }
   .theme-bloomi .bloomi-quote-strip,
   .theme-bloomi .bloomi-alert-strip {

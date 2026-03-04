@@ -11,16 +11,12 @@
   <div class="desktop-bg bloomi-desktop">
     <div class="window-shell bloomi-terminal">
       <div class="bloomi-topbar">
-        <div class="bloomi-top-left">CCM <span class="bloomi-sep">|</span> MARKET TERMINAL</div>
-        <div class="bloomi-top-right">Message <span class="bloomi-sep">|</span> Help</div>
-      </div>
-
-      <div class="titlebar bloomi-titlebar">
-        <div class="titlebar-left bloomi-title-left">
+        <div class="bloomi-top-left">
           <span id="streamDot" class="title-dot bloomi-dot" title="Log stream disconnected"></span>
-          <strong class="bloomi-brand">CCM TERMINAL</strong>
+          <strong id="title" class="bloomi-title-live">Select an item</strong>
+          <span id="subtitle" class="bloomi-subtitle">No host machine selected</span>
         </div>
-        <div class="titlebar-right bloomi-title-right">CCM</div>
+        <div id="status" class="bloomi-top-status">idle</div>
       </div>
 
       <div class="app bloomi-app">
@@ -32,14 +28,6 @@
         </aside>
 
         <main class="main panel-frame bloomi-main">
-          <header class="header bloomi-header">
-            <div>
-              <h1 id="title">Select an item</h1>
-              <div id="subtitle" class="muted">No host machine selected</div>
-            </div>
-            <span id="status" class="badge">idle</span>
-          </header>
-
           <section class="stats" id="stats"></section>
 
           <section class="actions bloomi-actions">
