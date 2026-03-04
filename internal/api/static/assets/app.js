@@ -176,10 +176,10 @@ async function selectItem(item) {
     const c = await res.json();
     renderStats([
       ['Image', c.image],
-      ['Restart count', c.restart_count],
       ['Uptime', c.uptime],
       ['Ports', (c.ports || []).join(', ') || '-'],
       ['Container ID', c.container_id],
+      ['Restart count', c.restart_count],
       ['Host machine', c.target_id],
     ], { restart: c.restart });
     $('details').textContent = JSON.stringify(c, null, 2);
@@ -210,12 +210,12 @@ async function selectItem(item) {
 
 function renderStats(items, options = {}) {
   const cards = [];
-  if (options.restart) {
-    cards.push(renderRestartCard(options.restart));
-  }
   items.forEach(([k, v]) => {
     cards.push(`<div class="stat"><div class="k">${escapeHTML(k)}</div><div class="v">${escapeHTML(String(v ?? '-'))}</div></div>`);
   });
+  if (options.restart) {
+    cards.push(renderRestartCard(options.restart));
+  }
   $('stats').innerHTML = cards.join('');
 }
 
