@@ -105,9 +105,11 @@ body.theme-bloomi {
 }
 
 .theme-bloomi .bloomi-title-live {
-  color: #f0b04a;
-  font-size: 15px;
+  color: #eaf1ff;
+  font-size: 34px;
   font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.4px;
   text-overflow: ellipsis;
   overflow: hidden;
 }
@@ -440,7 +442,7 @@ body.theme-bloomi {
 
 @media (max-width: 980px) {
   .theme-bloomi .bloomi-title-live {
-    font-size: 13px;
+    font-size: 22px;
   }
   .theme-bloomi .bloomi-top-status {
     min-width: 84px;
