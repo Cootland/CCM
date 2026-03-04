@@ -1,0 +1,203 @@
+:root {
+  --bg: #050505;
+  --bg-radial-start: #222011;
+  --bg-radial-end: #000000;
+
+  --window: #0a0a0a;
+  --panel: #0f0f0f;
+  --text: #ffb000;
+  --muted: #b68f3d;
+
+  --line-dark: #171717;
+  --line-deep: #2d2d2d;
+  --line-mid: #494949;
+  --line-light: #8e6e21;
+
+  --titlebar-bg: linear-gradient(90deg, #1a1a1a 0%, #2d240f 40%, #7b5300 100%);
+  --titlebar-text: #ffd27a;
+  --titlebar-right-opacity: 1;
+
+  --title-dot-border: #261400;
+  --title-dot-connecting: #ffc64c;
+  --title-dot-active: #3bff69;
+  --title-dot-inactive: #5f450f;
+
+  --panel-title-bg: linear-gradient(90deg, #191919 0%, #5a3f06 100%);
+  --panel-title-text: #ffcb5e;
+
+  --input-bg: #0d0d0d;
+  --list-bg: #090909;
+  --item-hover-bg: #1c1710;
+  --item-active-bg: #ff9e00;
+  --item-active-text: #0a0a0a;
+  --item-active-meta: #2c2000;
+  --item-child-bg: #121212;
+  --item-child-line: #8b6300;
+
+  --badge-bg: #1a1509;
+  --stat-bg: #0e0e0e;
+
+  --action-bg: #0e0e0e;
+  --action-ok: #68ff8b;
+  --action-err: #ff6161;
+
+  --button-bg: #22190a;
+  --button-hover-bg: #30220c;
+  --button-active-bg: #46300f;
+
+  --tab-active-bg: #241a0a;
+
+  --logs-bg: #030303;
+  --logs-text: #ffd066;
+  --details-bg: #080808;
+  --details-text: #f8bd4f;
+
+  --status-bg: #18120a;
+
+  --font-ui: "IBM Plex Mono", "SF Mono", "Consolas", "Liberation Mono", monospace;
+  --font-mono: "IBM Plex Mono", "SF Mono", "Consolas", "Liberation Mono", monospace;
+}
+
+body.theme-bloomi {
+  letter-spacing: 0.1px;
+}
+
+.theme-bloomi .desktop-bg {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 185, 62, 0.03) 0px,
+      rgba(255, 185, 62, 0.03) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+}
+
+.theme-bloomi .bloomi-terminal {
+  border-color: #7f5a10 #100d07 #100d07 #7f5a10;
+  box-shadow:
+    inset 0 0 0 1px #241a0b,
+    inset 0 0 0 2px #010101,
+    0 18px 60px rgba(0, 0, 0, 0.65);
+}
+
+.theme-bloomi .bloomi-titlebar {
+  height: 34px;
+  text-transform: uppercase;
+}
+
+.theme-bloomi .bloomi-title-left {
+  gap: 12px;
+}
+
+.theme-bloomi .bloomi-dot {
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 172, 39, 0.3);
+}
+
+.theme-bloomi .bloomi-brand {
+  font-size: 14px;
+  letter-spacing: 1.2px;
+}
+
+.theme-bloomi .bloomi-market {
+  font-size: 10px;
+  opacity: 0.9;
+}
+
+.theme-bloomi .bloomi-title-right {
+  font-size: 12px;
+  letter-spacing: 1.6px;
+  color: #0f0f0f;
+  background: linear-gradient(180deg, #ffca6b 0%, #c47a00 100%);
+  padding: 3px 8px;
+}
+
+.theme-bloomi .bloomi-app {
+  gap: 12px;
+}
+
+.theme-bloomi .bloomi-sidebar,
+.theme-bloomi .bloomi-main,
+.theme-bloomi .bloomi-panel,
+.theme-bloomi .panel-frame-inset {
+  border-color: #6e4d10 #111111 #111111 #6e4d10;
+  box-shadow: inset 0 0 0 1px #2a1c08;
+}
+
+.theme-bloomi #search {
+  color: #ffd889;
+  border-color: #6d4f13 #171717 #171717 #6d4f13;
+}
+
+.theme-bloomi #search:focus {
+  outline: 1px solid #ffad24;
+  outline-offset: 1px;
+}
+
+.theme-bloomi .items {
+  scrollbar-color: #7a5c1e #0a0a0a;
+}
+
+.theme-bloomi .item {
+  border-bottom: 1px dotted #3f3120;
+}
+
+.theme-bloomi .panel-title,
+.theme-bloomi .badge,
+.theme-bloomi .status-segment {
+  letter-spacing: 0.7px;
+}
+
+.theme-bloomi .header h1 {
+  font-size: 20px;
+  text-transform: uppercase;
+  color: #ffc768;
+}
+
+.theme-bloomi .stat {
+  background-image:
+    linear-gradient(180deg, rgba(255, 172, 39, 0.03) 0%, transparent 40%),
+    linear-gradient(90deg, rgba(255, 172, 39, 0.03) 0%, transparent 28%);
+}
+
+.theme-bloomi .stat .k {
+  color: #d7a24e;
+}
+
+.theme-bloomi button {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-color: #8a6117 #1a1409 #1a1409 #8a6117;
+  color: #ffd889;
+}
+
+.theme-bloomi button:hover {
+  color: #ffe6b3;
+}
+
+.theme-bloomi .tab.active {
+  color: #ffce6e;
+  border-bottom: 2px solid #ff9f0f;
+}
+
+.theme-bloomi .action-result {
+  text-transform: uppercase;
+}
+
+.theme-bloomi .logs,
+.theme-bloomi #details {
+  border-top-color: #8a6117;
+  text-shadow: 0 0 1px rgba(255, 196, 92, 0.25);
+}
+
+.theme-bloomi .bloomi-statusbar {
+  height: 30px;
+  border-top-color: #7f5a10;
+}
+
+@media (max-width: 980px) {
+  .theme-bloomi .bloomi-market {
+    display: none;
+  }
+}
