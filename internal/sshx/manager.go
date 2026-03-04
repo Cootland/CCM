@@ -1,6 +1,7 @@
 package sshx
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
@@ -159,28 +160,65 @@ func (m *Manager) StreamLogs(ctx context.Context, targetID, cmd string, out io.W
 		return err
 	}
 
-	errCh := make(chan error, 2)
-	go func() {
-		_, err := io.Copy(out, stdout)
-		errCh <- err
-	}()
-	go func() {
-		_, err := io.Copy(out, stderr)
-		errCh <- err
-	}()
-
-	select {
-	case <-ctx.Done():
-		_ = session.Signal(ssh.SIGKILL)
-		_ = session.Close()
-		return ctx.Err()
-	case err := <-errCh:
-		_ = session.Close()
-		if err != nil && !errors.Is(err, io.EOF) {
-			return err
-		}
-		return nil
+	type streamEvent struct {
+		line []byte
+		err  error
+		done bool
 	}
+	evCh := make(chan streamEvent, 128)
+
+	stream := func(r io.Reader) {
+		scanner := bufio.NewScanner(r)
+		// Docker logs can include long JSON lines; raise scanner ceiling from 64K.
+		scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
+		for scanner.Scan() {
+			line := append([]byte(scanner.Text()), '\n')
+			select {
+			case evCh <- streamEvent{line: line}:
+			case <-ctx.Done():
+				evCh <- streamEvent{done: true}
+				return
+			}
+		}
+		if err := scanner.Err(); err != nil && !errors.Is(err, io.EOF) {
+			evCh <- streamEvent{err: err, done: true}
+			return
+		}
+		evCh <- streamEvent{done: true}
+	}
+	go stream(stdout)
+	go stream(stderr)
+
+	done := 0
+	for done < 2 {
+		select {
+		case <-ctx.Done():
+			_ = session.Signal(ssh.SIGKILL)
+			_ = session.Close()
+			return ctx.Err()
+		case ev := <-evCh:
+			if len(ev.line) > 0 {
+				if _, err := out.Write(ev.line); err != nil {
+					_ = session.Signal(ssh.SIGKILL)
+					_ = session.Close()
+					return err
+				}
+			}
+			if ev.err != nil {
+				_ = session.Signal(ssh.SIGKILL)
+				_ = session.Close()
+				return ev.err
+			}
+			if ev.done {
+				done++
+			}
+		}
+	}
+
+	if err := session.Wait(); err != nil && !errors.Is(err, io.EOF) {
+		return err
+	}
+	return nil
 }
 
 func (m *Manager) target(id string) (*targetConn, error) {
