@@ -1,90 +1,110 @@
 :root {
-  --bg: #010102;
-  --bg-radial-start: #0d0f16;
+  --bg: #000000;
+  --bg-radial-start: #020409;
   --bg-radial-end: #000000;
 
-  --window: #050608;
-  --panel: #06080f;
-  --text: #ffd95f;
-  --muted: #8ea4ce;
+  --window: #000000;
+  --panel: #000000;
+  --text: #f0b04a;
+  --muted: #90a0bc;
 
-  --line-dark: #04060b;
-  --line-deep: #1a2642;
-  --line-mid: #284887;
-  --line-light: #f5a100;
+  --line-dark: #101010;
+  --line-deep: #1e2a42;
+  --line-mid: #2a4f95;
+  --line-light: #f0b100;
 
-  --titlebar-bg: linear-gradient(90deg, #111e38 0%, #20448c 35%, #f0a300 100%);
-  --titlebar-text: #fef2cb;
+  --titlebar-bg: linear-gradient(90deg, #000000 0%, #000000 100%);
+  --titlebar-text: #f4f7ff;
   --titlebar-right-opacity: 1;
 
-  --title-dot-border: #0b0b0b;
-  --title-dot-connecting: #ffe066;
-  --title-dot-active: #00ff84;
-  --title-dot-inactive: #5b6680;
+  --title-dot-border: #08101d;
+  --title-dot-connecting: #ffd551;
+  --title-dot-active: #00e173;
+  --title-dot-inactive: #4f668d;
 
-  --panel-title-bg: linear-gradient(90deg, #10254f 0%, #2f5fb8 55%, #1b2d57 100%);
-  --panel-title-text: #d7e6ff;
+  --panel-title-bg: linear-gradient(90deg, #1c4f9c 0%, #2c6ecf 100%);
+  --panel-title-text: #eaf2ff;
 
-  --input-bg: #02050d;
-  --list-bg: #01040a;
-  --item-hover-bg: #0f1f3f;
-  --item-active-bg: #ffd34d;
-  --item-active-text: #060b18;
-  --item-active-meta: #1b2747;
-  --item-child-bg: #061021;
-  --item-child-line: #2d66ce;
+  --input-bg: #02060e;
+  --list-bg: #000000;
+  --item-hover-bg: #0d1d39;
+  --item-active-bg: #f0b100;
+  --item-active-text: #040913;
+  --item-active-meta: #15284a;
+  --item-child-bg: #031026;
+  --item-child-line: #3a70ce;
 
-  --badge-bg: #0f2147;
-  --stat-bg: #060d1b;
+  --badge-bg: #1b3e7a;
+  --stat-bg: #000000;
 
-  --action-bg: #081022;
-  --action-ok: #00ff8f;
-  --action-err: #ff5d66;
+  --action-bg: #000000;
+  --action-ok: #00f18f;
+  --action-err: #ff626f;
 
-  --button-bg: #0f2550;
-  --button-hover-bg: #183570;
-  --button-active-bg: #224991;
+  --button-bg: #123e83;
+  --button-hover-bg: #1f58b2;
+  --button-active-bg: #2d6fda;
 
-  --tab-active-bg: #1d3670;
+  --tab-active-bg: #1a4c9a;
 
-  --logs-bg: #00030a;
-  --logs-text: #ffd465;
-  --details-bg: #040b19;
-  --details-text: #a5bcf0;
+  --logs-bg: #000000;
+  --logs-text: #f0b04a;
+  --details-bg: #000000;
+  --details-text: #e6edf8;
 
-  --status-bg: #0c1d3f;
+  --status-bg: #00162f;
 
   --font-ui: "IBM Plex Mono", "Menlo", "Consolas", monospace;
   --font-mono: "IBM Plex Mono", "Menlo", "Consolas", monospace;
 }
 
 body.theme-bloomi {
-  letter-spacing: 0.12px;
+  font-size: 12px;
+  letter-spacing: 0.1px;
 }
 
 .theme-bloomi .desktop-bg {
+  padding: 4px;
   background:
-    linear-gradient(180deg, rgba(20, 48, 102, 0.18) 0%, transparent 44%),
+    linear-gradient(180deg, rgba(24, 66, 133, 0.15) 0%, transparent 25%),
     repeating-linear-gradient(
       0deg,
-      rgba(255, 213, 94, 0.05) 0px,
-      rgba(255, 213, 94, 0.05) 1px,
+      rgba(255, 197, 74, 0.03) 0px,
+      rgba(255, 197, 74, 0.03) 1px,
       transparent 1px,
-      transparent 3px
+      transparent 2px
     );
 }
 
 .theme-bloomi .bloomi-terminal {
-  border-color: #f3aa11 #111d36 #111d36 #f3aa11;
-  box-shadow:
-    inset 0 0 0 1px #203f7f,
-    inset 0 0 0 2px #02050c,
-    0 22px 70px rgba(0, 0, 0, 0.7);
+  min-height: calc(100vh - 8px);
+  border: 1px solid #2b5fb5;
+  box-shadow: inset 0 0 0 1px #0d1f3e;
+  background: #000;
+}
+
+.theme-bloomi .bloomi-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  background: linear-gradient(180deg, #111722 0%, #0a1018 100%);
+  color: #d5def0;
+  border-bottom: 1px solid #2c3f62;
+}
+
+.theme-bloomi .bloomi-sep {
+  color: #6f84aa;
+  margin: 0 6px;
 }
 
 .theme-bloomi .bloomi-titlebar {
-  height: 34px;
-  text-transform: uppercase;
+  height: 40px;
+  padding: 0 10px;
+  border-bottom: 1px solid #1f355f;
+  background:
+    linear-gradient(90deg, #000 0%, #000 100%);
 }
 
 .theme-bloomi .bloomi-title-left {
@@ -93,213 +113,340 @@ body.theme-bloomi {
 
 .theme-bloomi .bloomi-dot {
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255, 214, 100, 0.3);
+  box-shadow: 0 0 8px rgba(255, 213, 84, 0.4);
 }
 
 .theme-bloomi .bloomi-brand {
-  font-size: 14px;
-  letter-spacing: 1.1px;
-  color: #fff3d1;
+  font-size: 38px;
+  line-height: 1;
+  color: #eaf1ff;
+  letter-spacing: -0.5px;
 }
 
 .theme-bloomi .bloomi-market {
-  font-size: 10px;
-  color: #d9e6ff;
+  font-size: 20px;
+  color: #f0b04a;
+  font-weight: 700;
+}
+
+.theme-bloomi .bloomi-pos {
+  color: #37ef87;
 }
 
 .theme-bloomi .bloomi-title-right {
-  font-size: 11px;
-  letter-spacing: 1.4px;
-  color: #03060f;
-  background: linear-gradient(180deg, #ffd56b 0%, #f0a001 100%);
-  padding: 3px 8px;
-  border: 1px solid #1a1a1a;
+  font-size: 28px;
+  color: #f5f8ff;
+  font-weight: 700;
+}
+
+.theme-bloomi .bloomi-quote-strip {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  color: #f0b04a;
+  background: #020202;
+  border-bottom: 1px solid #344c7a;
+  font-size: 17px;
+}
+
+.theme-bloomi .bloomi-alert-strip {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: 30px;
+  padding: 0 6px;
+  background: #8e1f2c;
+  color: #fce6e9;
+  border-bottom: 1px solid #c73e4f;
+  font-size: 15px;
+}
+
+.theme-bloomi .bloomi-alert-strip span {
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.theme-bloomi .bloomi-alert-strip .bloomi-right {
+  margin-left: auto;
+  background: transparent;
+  color: #f5d9de;
 }
 
 .theme-bloomi .bloomi-function-strip {
   display: flex;
-  gap: 6px;
-  padding: 5px 8px;
-  border-top: 1px solid #304f8d;
-  border-bottom: 1px solid #17294d;
-  background: linear-gradient(90deg, #07112a 0%, #0f2b63 45%, #0a1d41 100%);
+  gap: 1px;
+  padding: 0;
+  background: #0c1830;
+  border-bottom: 1px solid #355a9e;
 }
 
 .theme-bloomi .bloomi-chip {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  font-size: 10px;
+  min-height: 28px;
+  padding: 0 12px;
+  font-size: 18px;
+  text-transform: none;
   font-weight: 700;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  border: 1px solid #02122f;
 }
 
 .theme-bloomi .bloomi-chip-blue {
-  background: linear-gradient(180deg, #2e6fda 0%, #1c4ea5 100%);
-  color: #eaf3ff;
+  background: #1f56aa;
+  color: #eef5ff;
 }
 
 .theme-bloomi .bloomi-chip-yellow {
-  background: linear-gradient(180deg, #ffd34e 0%, #df9a00 100%);
-  color: #141414;
+  background: #f0b100;
+  color: #1a1200;
 }
 
 .theme-bloomi .bloomi-chip-red {
-  background: linear-gradient(180deg, #ff6b76 0%, #bf2635 100%);
-  color: #fff1f1;
+  background: #a11d2b;
+  color: #ffe4e8;
 }
 
 .theme-bloomi .bloomi-chip-green {
-  background: linear-gradient(180deg, #2ce890 0%, #108f52 100%);
-  color: #03150d;
+  background: #0b7b45;
+  color: #e0fff0;
 }
 
 .theme-bloomi .bloomi-app {
-  gap: 10px;
+  grid-template-columns: 300px 1fr;
+  gap: 0;
+  padding: 0;
 }
 
 .theme-bloomi .bloomi-sidebar,
-.theme-bloomi .bloomi-main,
-.theme-bloomi .bloomi-panel,
-.theme-bloomi .panel-frame-inset {
-  border-color: #f0a300 #0f2148 #0f2148 #f0a300;
-  box-shadow: inset 0 0 0 1px #183364;
+.theme-bloomi .bloomi-main {
+  border: 0;
+  box-shadow: none;
+}
+
+.theme-bloomi .bloomi-sidebar {
+  border-right: 1px solid #2d4f89;
+  padding: 6px;
+  background: #01050d;
 }
 
 .theme-bloomi .panel-title {
-  letter-spacing: 0.75px;
+  margin-bottom: 6px;
+  padding: 3px 6px;
+  font-size: 16px;
+  text-transform: none;
+}
+
+.theme-bloomi .field-label {
+  color: #d2def3;
 }
 
 .theme-bloomi #search {
-  color: #d3e2ff;
-  border-color: #2b4f95 #142347 #142347 #2b4f95;
+  margin-bottom: 6px;
+  padding: 6px;
+  border: 1px solid #2e5da9;
+  color: #d9e5f9;
 }
 
-.theme-bloomi #search:focus {
-  outline: 1px solid #ffd56e;
-  outline-offset: 1px;
+.theme-bloomi .items {
+  border: 1px solid #2e5da9;
 }
 
 .theme-bloomi .item {
-  border-bottom: 1px dotted #264a90;
+  padding: 6px 8px;
+  border-bottom: 1px solid #1e335b;
 }
 
 .theme-bloomi .item .meta {
-  color: #8fa3ca;
+  color: #7f97c1;
+}
+
+.theme-bloomi .bloomi-main {
+  padding: 6px;
+  gap: 6px;
+  background: #000000;
+}
+
+.theme-bloomi .header {
+  padding: 3px 6px;
+  border: 1px solid #2b5296;
+  background: #06112a;
 }
 
 .theme-bloomi .header h1 {
-  font-size: 20px;
-  text-transform: uppercase;
-  color: #ffe085;
+  font-size: 24px;
+  color: #f0b04a;
+  font-weight: 700;
+}
+
+.theme-bloomi .muted {
+  color: #8ca2ca;
 }
 
 .theme-bloomi .badge {
-  background: linear-gradient(180deg, #234e9e 0%, #133268 100%);
-  color: #dce8ff;
+  border: 1px solid #517cc9;
+  color: #e2edff;
+  font-size: 12px;
+}
+
+.theme-bloomi .stats {
+  gap: 0;
+  border: 1px solid #2a4f95;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .theme-bloomi .stat {
-  background-image:
-    linear-gradient(180deg, rgba(33, 87, 180, 0.21) 0%, transparent 42%),
-    linear-gradient(90deg, rgba(255, 184, 38, 0.08) 0%, transparent 40%);
+  border: 0;
+  border-right: 1px solid #203861;
+  border-bottom: 1px solid #203861;
+  padding: 5px 6px;
 }
 
 .theme-bloomi .stat .k {
-  color: #93abdb;
+  color: #84a2d3;
+  font-size: 11px;
 }
 
 .theme-bloomi .stat .v {
-  color: #ffd15f;
-}
-
-.theme-bloomi .stat:nth-child(3n) .v {
-  color: #6be3ff;
-}
-
-.theme-bloomi .stat:nth-child(4n) .v {
-  color: #7fffb6;
+  color: #f0b04a;
+  font-size: 14px;
 }
 
 .theme-bloomi .stat-restart.is-disabled .v {
-  color: #ff7b86;
+  color: #ff6c79;
+}
+
+.theme-bloomi .actions,
+.theme-bloomi .tabs,
+.theme-bloomi .log-controls {
+  gap: 2px;
+  padding: 0;
 }
 
 .theme-bloomi button {
+  border: 1px solid #4672bc;
+  padding: 4px 8px;
+  font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-color: #f0a300 #122449 #122449 #f0a300;
-  color: #e2ecff;
-}
-
-.theme-bloomi #btnStop {
-  background: linear-gradient(180deg, #7b1f2d 0%, #4e101a 100%);
-  border-color: #ff6675 #25070c #25070c #ff6675;
-  color: #ffd8dc;
-}
-
-.theme-bloomi #btnRestart {
-  background: linear-gradient(180deg, #8f5d00 0%, #5f3a00 100%);
-  color: #ffe6a8;
+  color: #edf3ff;
 }
 
 .theme-bloomi #btnStart {
-  background: linear-gradient(180deg, #157a4b 0%, #0d5634 100%);
-  border-color: #3af9a2 #072115 #072115 #3af9a2;
-  color: #d3ffe9;
+  background: #0a7b44;
+  border-color: #19b569;
 }
 
-.theme-bloomi .tab {
-  color: #b9cbef;
+.theme-bloomi #btnStop {
+  background: #8e1f2c;
+  border-color: #c33949;
 }
 
-.theme-bloomi .tab.active {
-  color: #ffe08d;
-  border-bottom: 2px solid #ffd14f;
+.theme-bloomi #btnRestart {
+  background: #f0b100;
+  border-color: #ffcf52;
+  color: #211500;
+}
+
+.theme-bloomi #btnRedeploy {
+  background: #1f56aa;
 }
 
 .theme-bloomi .action-result {
-  text-transform: uppercase;
+  border: 1px solid #2e5da9;
+  min-height: 26px;
+  padding: 4px 8px;
 }
 
-.theme-bloomi .action-result.ok {
-  color: #79ffbc;
+.theme-bloomi .tabs {
+  border: 1px solid #2e5da9;
+  background: #06112a;
 }
 
-.theme-bloomi .action-result.err {
-  color: #ff7782;
+.theme-bloomi .tab {
+  background: #0e2450;
+}
+
+.theme-bloomi .tab.active {
+  background: #1f56aa;
+  color: #fff2cf;
+  border-bottom: 1px solid #f0b100;
+}
+
+.theme-bloomi .bloomi-panel {
+  border: 1px solid #2e5da9;
+  background: #000;
+}
+
+.theme-bloomi .bloomi-log-controls {
+  background: #06112a;
+  border-bottom: 1px solid #2e5da9;
+  padding: 2px;
 }
 
 .theme-bloomi .logs,
 .theme-bloomi #details {
-  border-top-color: #2e5db5;
-}
-
-.theme-bloomi .logs {
-  text-shadow: 0 0 1px rgba(255, 200, 74, 0.35);
+  border-top: 0;
+  min-height: 260px;
+  max-height: 42vh;
+  font-size: 20px;
+  line-height: 1.22;
+  padding: 6px 8px;
+  text-shadow: none;
 }
 
 .theme-bloomi #details {
-  text-shadow: 0 0 1px rgba(121, 177, 255, 0.2);
+  color: #d9e5ff;
 }
 
 .theme-bloomi .bloomi-statusbar {
-  height: 30px;
-  border-top-color: #2f5fb8;
+  height: 36px;
+  border-top: 1px solid #355a9e;
+  background: #02122d;
 }
 
 .theme-bloomi .status-segment {
-  letter-spacing: 0.7px;
+  border: 1px solid #325a9f;
+  background: #09214a;
+  font-size: 13px;
+  color: #f0b04a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-bloomi .bloomi-ticker {
+  flex: 1;
 }
 
 @media (max-width: 980px) {
+  .theme-bloomi .bloomi-brand {
+    font-size: 26px;
+  }
+  .theme-bloomi .bloomi-market,
+  .theme-bloomi .bloomi-title-right {
+    font-size: 16px;
+  }
   .theme-bloomi .bloomi-market {
     display: none;
   }
-  .theme-bloomi .bloomi-function-strip {
+  .theme-bloomi .bloomi-quote-strip,
+  .theme-bloomi .bloomi-alert-strip {
     overflow-x: auto;
     white-space: nowrap;
+    font-size: 13px;
+  }
+  .theme-bloomi .bloomi-chip {
+    font-size: 13px;
+  }
+  .theme-bloomi .bloomi-app {
+    grid-template-columns: 1fr;
+  }
+  .theme-bloomi .bloomi-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #2d4f89;
+  }
+  .theme-bloomi .logs,
+  .theme-bloomi #details {
+    font-size: 14px;
   }
 }

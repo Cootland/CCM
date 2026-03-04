@@ -10,19 +10,41 @@
 <body class="theme-{{.Theme}}">
   <div class="desktop-bg bloomi-desktop">
     <div class="window-shell bloomi-terminal">
+      <div class="bloomi-topbar">
+        <div class="bloomi-top-left">CCM <span class="bloomi-sep">|</span> MARKET TERMINAL</div>
+        <div class="bloomi-top-right">Message <span class="bloomi-sep">|</span> Help</div>
+      </div>
+
       <div class="titlebar bloomi-titlebar">
         <div class="titlebar-left bloomi-title-left">
           <span id="streamDot" class="title-dot bloomi-dot" title="Log stream disconnected"></span>
-          <strong class="bloomi-brand">CCM TERMINAL</strong>
-          <span class="bloomi-market">LON 12:47 | NY 07:47 | UTC 22:47</span>
+          <strong class="bloomi-brand">AAPL US</strong>
+          <span class="bloomi-market">$ 119.26 <span class="bloomi-pos">+0.05</span></span>
         </div>
-        <div class="titlebar-right bloomi-title-right">BLOOMI</div>
+        <div class="titlebar-right bloomi-title-right">CCM BQ</div>
       </div>
+
+      <div class="bloomi-quote-strip" aria-hidden="true">
+        <span>Vol 81,688,586</span>
+        <span>O 119.44</span>
+        <span>H 119.67</span>
+        <span>L 117.87</span>
+        <span class="bloomi-pos">Val 9.69B</span>
+      </div>
+
+      <div class="bloomi-alert-strip" aria-hidden="true">
+        <span>AAPL US Equity</span>
+        <span>9) Actions</span>
+        <span>97) Export</span>
+        <span>98) Settings</span>
+        <span class="bloomi-right">Financial Analysis</span>
+      </div>
+
       <div class="bloomi-function-strip" aria-hidden="true">
-        <span class="bloomi-chip bloomi-chip-blue">F1 HELP</span>
-        <span class="bloomi-chip bloomi-chip-yellow">F8 LOGS</span>
-        <span class="bloomi-chip bloomi-chip-red">ALERT RISK</span>
-        <span class="bloomi-chip bloomi-chip-green">LIVE</span>
+        <span class="bloomi-chip bloomi-chip-blue">11) Highlights</span>
+        <span class="bloomi-chip bloomi-chip-yellow">12) Logs</span>
+        <span class="bloomi-chip bloomi-chip-red">13) Alerts</span>
+        <span class="bloomi-chip bloomi-chip-green">14) Health</span>
       </div>
 
       <div class="app bloomi-app">
@@ -80,7 +102,7 @@
       </div>
 
       <div class="statusbar bloomi-statusbar">
-        <div class="status-segment">CCM BLOOMI MODE</div>
+        <div class="status-segment bloomi-ticker">347 BBC 15:11  Container restart watch active on target-alpha</div>
         <div class="status-segment" id="clock">--:--:--</div>
       </div>
     </div>
