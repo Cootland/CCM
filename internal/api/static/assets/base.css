@@ -288,8 +288,10 @@ button:active {
 #details {
   margin: 0;
   padding: 10px;
-  min-height: 300px;
-  max-height: 54vh;
+  min-height: 0;
+  max-height: none;
+  height: 100%;
+  flex: 1;
   overflow: auto;
   border-top: 2px solid;
   border-color: var(--line-deep) var(--line-light) var(--line-light) var(--line-deep);
@@ -333,9 +335,5 @@ button:active {
   }
   .items {
     max-height: 240px;
-  }
-  .logs,
-  #details {
-    max-height: 42vh;
   }
 }

@@ -396,6 +396,7 @@ body.theme-bloomi {
 .theme-bloomi .bloomi-panel {
   border: 1px solid #2e5da9;
   background: #000;
+  min-height: 0;
 }
 
 .theme-bloomi .bloomi-log-controls {
@@ -407,8 +408,10 @@ body.theme-bloomi {
 .theme-bloomi .logs,
 .theme-bloomi #details {
   border-top: 0;
-  min-height: 260px;
-  max-height: 42vh;
+  min-height: 0;
+  max-height: none;
+  height: 100%;
+  flex: 1;
   font-size: 20px;
   line-height: 1.22;
   padding: 6px 8px;
