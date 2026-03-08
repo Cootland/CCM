@@ -26,6 +26,7 @@ type Config struct {
 }
 
 var stackIDPattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+var scriptFilePattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+\.sh$`)
 
 func Load(path string) (*Config, error) {
 	b, err := os.ReadFile(path)
@@ -111,6 +112,41 @@ func (c *Config) Validate() error {
 			}
 			if _, ok := c.RestartStrategies[ref]; !ok {
 				errs = append(errs, fmt.Sprintf("stack %q container %q references unknown restart strategy %q", id, containerName, ref))
+			}
+		}
+		seenScriptNames := map[string]struct{}{}
+		for idx, script := range s.Scripts {
+			name := strings.TrimSpace(script.Name)
+			if name == "" {
+				errs = append(errs, fmt.Sprintf("stack %q script[%d] requires name", id, idx))
+			} else {
+				if !stackIDPattern.MatchString(name) {
+					errs = append(errs, fmt.Sprintf("stack %q script name %q must match %s", id, name, stackIDPattern.String()))
+				}
+				if _, exists := seenScriptNames[name]; exists {
+					errs = append(errs, fmt.Sprintf("stack %q script name %q must be unique", id, name))
+				}
+				seenScriptNames[name] = struct{}{}
+			}
+
+			spec := strings.TrimSpace(script.Cron)
+			if spec == "" {
+				errs = append(errs, fmt.Sprintf("stack %q script %q requires cron expression", id, name))
+			} else if _, err := cronexpr.Parse(spec); err != nil {
+				errs = append(errs, fmt.Sprintf("stack %q script %q has invalid cron: %v", id, name, err))
+			}
+
+			file := strings.TrimSpace(script.File)
+			if file == "" {
+				errs = append(errs, fmt.Sprintf("stack %q script %q requires file", id, name))
+			} else if !scriptFilePattern.MatchString(file) {
+				errs = append(errs, fmt.Sprintf("stack %q script %q file %q must match %s", id, name, file, scriptFilePattern.String()))
+			}
+
+			if tz := strings.TrimSpace(script.Timezone); tz != "" {
+				if _, err := time.LoadLocation(tz); err != nil {
+					errs = append(errs, fmt.Sprintf("stack %q script %q timezone invalid: %v", id, name, err))
+				}
 			}
 		}
 	}

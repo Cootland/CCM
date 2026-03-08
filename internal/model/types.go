@@ -25,13 +25,21 @@ type Target struct {
 }
 
 type CCMStack struct {
-	ID           string       `yaml:"-" json:"id"`
-	TargetID     string       `yaml:"target" json:"target_id"`
-	DeploySubdir string       `yaml:"deploy_subdir" json:"deploy_subdir"`
-	Profile      string       `yaml:"profile" json:"profile,omitempty"`
-	Restart      StackRestart `yaml:"restart" json:"restart,omitempty"`
-	Target       *Target      `yaml:"-" json:"-"`
-	Flags        DeployFlags  `yaml:"-" json:"flags"`
+	ID           string        `yaml:"-" json:"id"`
+	TargetID     string        `yaml:"target" json:"target_id"`
+	DeploySubdir string        `yaml:"deploy_subdir" json:"deploy_subdir"`
+	Profile      string        `yaml:"profile" json:"profile,omitempty"`
+	Restart      StackRestart  `yaml:"restart" json:"restart,omitempty"`
+	Scripts      []StackScript `yaml:"scripts" json:"scripts,omitempty"`
+	Target       *Target       `yaml:"-" json:"-"`
+	Flags        DeployFlags   `yaml:"-" json:"flags"`
+}
+
+type StackScript struct {
+	Name     string `yaml:"name" json:"name"`
+	Cron     string `yaml:"cron" json:"cron"`
+	File     string `yaml:"file" json:"file"`
+	Timezone string `yaml:"timezone,omitempty" json:"timezone,omitempty"`
 }
 
 type StackRestart struct {
@@ -127,7 +135,13 @@ type DeployRequest struct {
 	EnvFile    string            `json:"env_file,omitempty"`
 	Env        map[string]string `json:"env,omitempty"`
 	Caddyfile  string            `json:"caddyfile,omitempty"`
+	Scripts    []DeployScript    `json:"scripts,omitempty"`
 	RunCompose *bool             `json:"run_compose,omitempty"`
+}
+
+type DeployScript struct {
+	File    string `json:"file"`
+	Content string `json:"content"`
 }
 
 type CommandResult struct {

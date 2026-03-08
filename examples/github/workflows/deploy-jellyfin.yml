@@ -34,6 +34,7 @@ jobs:
           sha: ${{ github.sha }}
           compose_path: jellyfin/docker-compose.yml
           caddyfile_path: jellyfin/Caddyfile
+          scripts_dir_path: jellyfin/ccm_scripts
           env_json_path: jellyfin/env.json
           all_secrets_json: ${{ toJSON(secrets) }}
           restart_after_deploy: "true"

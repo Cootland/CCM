@@ -25,6 +25,7 @@ type Service struct {
 }
 
 var envKeyPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+var scriptFilePattern = regexp.MustCompile(`^[a-zA-Z0-9._-]+\.sh$`)
 
 func NewService(cfg *config.Config, ssh *sshx.Manager) *Service {
 	return &Service{cfg: cfg, ssh: ssh, lock: map[string]*sync.Mutex{}}
@@ -62,6 +63,10 @@ func (s *Service) Deploy(ctx context.Context, req model.DeployRequest) (map[stri
 			return nil, fmt.Errorf("write Caddyfile: %w", err)
 		}
 	}
+	scriptCount, err := s.writeScripts(ctx, stack.TargetID, deployPath, req.Scripts)
+	if err != nil {
+		return nil, err
+	}
 
 	runCompose := !isLikelySelfCCMStack(stack)
 	if req.RunCompose != nil {
@@ -77,15 +82,16 @@ func (s *Service) Deploy(ctx context.Context, req model.DeployRequest) (map[stri
 	}
 
 	return map[string]any{
-		"stack":       req.CCMStack,
-		"target":      stack.TargetID,
-		"deploy_path": deployPath,
-		"repo":        req.Repo,
-		"sha":         req.SHA,
-		"env_count":   envCount,
-		"caddyfile":   strings.TrimSpace(req.Caddyfile) != "",
-		"run_compose": runCompose,
-		"steps":       results,
+		"stack":        req.CCMStack,
+		"target":       stack.TargetID,
+		"deploy_path":  deployPath,
+		"repo":         req.Repo,
+		"sha":          req.SHA,
+		"env_count":    envCount,
+		"caddyfile":    strings.TrimSpace(req.Caddyfile) != "",
+		"script_count": scriptCount,
+		"run_compose":  runCompose,
+		"steps":        results,
 	}, nil
 }
 
@@ -464,4 +470,37 @@ func renderEnvValue(v string) string {
 		return strconv.Quote(v)
 	}
 	return v
+}
+
+func (s *Service) writeScripts(ctx context.Context, targetID, deployPath string, scripts []model.DeployScript) (int, error) {
+	if len(scripts) == 0 {
+		return 0, nil
+	}
+
+	seen := map[string]struct{}{}
+	count := 0
+	for _, script := range scripts {
+		file := strings.TrimSpace(script.File)
+		if file == "" {
+			return 0, fmt.Errorf("script file is required")
+		}
+		if !scriptFilePattern.MatchString(file) {
+			return 0, fmt.Errorf("script file %q is invalid; expected %s", file, scriptFilePattern.String())
+		}
+		if _, exists := seen[file]; exists {
+			return 0, fmt.Errorf("duplicate script file %q", file)
+		}
+		seen[file] = struct{}{}
+
+		if strings.TrimSpace(script.Content) == "" {
+			return 0, fmt.Errorf("script %q content is required", file)
+		}
+		scriptPath := path.Join(deployPath, "ccm_scripts", file)
+		if err := s.ssh.WriteFile(ctx, targetID, scriptPath, []byte(script.Content), "0755", 10*time.Second); err != nil {
+			return 0, fmt.Errorf("write script %q: %w", file, err)
+		}
+		count++
+	}
+
+	return count, nil
 }

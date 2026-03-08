@@ -27,6 +27,10 @@ inputs:
     description: Optional path to Caddyfile in caller repository
     required: false
     default: ""
+  scripts_dir_path:
+    description: Optional path to directory containing *.sh files (for example stack/ccm_scripts) to deploy as scripts
+    required: false
+    default: ""
   all_secrets_json:
     description: Use toJSON(secrets) from the caller workflow
     required: true
@@ -52,6 +56,7 @@ runs:
         INPUT_SHA: ${{ inputs.sha }}
         INPUT_COMPOSE_PATH: ${{ inputs.compose_path }}
         INPUT_CADDYFILE_PATH: ${{ inputs.caddyfile_path }}
+        INPUT_SCRIPTS_DIR_PATH: ${{ inputs.scripts_dir_path }}
         INPUT_ALL_SECRETS_JSON: ${{ inputs.all_secrets_json }}
         INPUT_ENV_JSON_PATH: ${{ inputs.env_json_path }}
         INPUT_RESTART_AFTER_DEPLOY: ${{ inputs.restart_after_deploy }}
@@ -67,6 +72,22 @@ runs:
         if [ -n "${INPUT_CADDYFILE_PATH}" ]; then
           [ -f "${INPUT_CADDYFILE_PATH}" ] || { echo "missing caddyfile: ${INPUT_CADDYFILE_PATH}"; exit 1; }
           caddy_content="$(cat "${INPUT_CADDYFILE_PATH}")"
+        fi
+
+        scripts_json="[]"
+        if [ -n "${INPUT_SCRIPTS_DIR_PATH}" ]; then
+          [ -d "${INPUT_SCRIPTS_DIR_PATH}" ] || { echo "missing scripts dir: ${INPUT_SCRIPTS_DIR_PATH}"; exit 1; }
+          tmp_scripts_jsonl="$(mktemp)"
+          find "${INPUT_SCRIPTS_DIR_PATH}" -maxdepth 1 -type f -name '*.sh' -print0 \
+            | sort -z \
+            | while IFS= read -r -d '' script_path; do
+                script_file="$(basename "${script_path}")"
+                jq -cn --arg file "${script_file}" --rawfile content "${script_path}" '{file: $file, content: $content}'
+              done > "${tmp_scripts_jsonl}"
+          if [ -s "${tmp_scripts_jsonl}" ]; then
+            scripts_json="$(jq -sc '.' "${tmp_scripts_jsonl}")"
+          fi
+          rm -f "${tmp_scripts_jsonl}"
         fi
 
         secrets_env_json="$(printf '%s' "${INPUT_ALL_SECRETS_JSON}" | jq -ce '
@@ -93,6 +114,7 @@ runs:
           --rawfile compose_yml "${INPUT_COMPOSE_PATH}" \
           --arg caddyfile "${caddy_content}" \
           --argjson env "${merged_env_json}" \
+          --argjson scripts "${scripts_json}" \
           '
           {
             ccm_stack: $ccm_stack,
@@ -102,6 +124,7 @@ runs:
           }
           + (if ($caddyfile | length) > 0 then {caddyfile: $caddyfile} else {} end)
           + (if ($env | length) > 0 then {env: $env} else {} end)
+          + (if ($scripts | length) > 0 then {scripts: $scripts} else {} end)
           ' > ccm-deploy-payload.json
 
         auth_args=()

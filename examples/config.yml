@@ -103,6 +103,13 @@ stacks:
           strategy: none
         sonarr:
           strategy: monthly_1st_345_utc
+    scripts:
+      - name: backup-metadata
+        cron: "15 2 * * *"
+        file: backup-metadata.sh
+      - name: weekly-maintenance
+        cron: "0 5 * * 0"
+        file: weekly-maintenance.sh
   navidrome:
     target: navidrome
     deploy_subdir: navidrome

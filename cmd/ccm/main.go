@@ -18,6 +18,7 @@ import (
 	"github.com/loganjanssen/ccm/internal/inventory"
 	"github.com/loganjanssen/ccm/internal/logs"
 	"github.com/loganjanssen/ccm/internal/restart"
+	"github.com/loganjanssen/ccm/internal/script"
 	"github.com/loganjanssen/ccm/internal/sshx"
 )
 
@@ -47,6 +48,12 @@ func main() {
 	}
 	restartSvc.Start(context.Background())
 	defer restartSvc.Stop()
+	scriptSvc, err := script.NewService(cfg, sshMgr)
+	if err != nil {
+		log.Fatalf("init script scheduler: %v", err)
+	}
+	scriptSvc.Start(context.Background())
+	defer scriptSvc.Stop()
 
 	srv := &http.Server{
 		Addr:         *listen,

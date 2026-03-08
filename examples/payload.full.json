@@ -8,5 +8,15 @@
     "TZ": "America/Chicago",
     "CLOUDFLARE_API_TOKEN": "replace-me"
   },
+  "scripts": [
+    {
+      "file": "backup-metadata.sh",
+      "content": "#!/bin/sh\nset -eu\nprintf 'backup run at %s\\n' \"$(date -Iseconds)\"\n"
+    },
+    {
+      "file": "weekly-maintenance.sh",
+      "content": "#!/bin/sh\nset -eu\nprintf 'maintenance run at %s\\n' \"$(date -Iseconds)\"\n"
+    }
+  ],
   "caddyfile": "(cf_tls) {\n  tls {\n    dns cloudflare {env.CLOUDFLARE_API_TOKEN}\n  }\n}\n\nsonarr.example.internal {\n  import cf_tls\n  reverse_proxy sonarr:8989\n}\n"
 }

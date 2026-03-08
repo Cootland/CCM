@@ -5,7 +5,7 @@ These examples show how to call CCM from a different repository (for example a `
 Included files:
 
 - `actions/ccm-deploy/action.yml`: reusable composite action that:
-  - builds CCM deploy payload from compose/caddy/env data
+  - builds CCM deploy payload from compose/caddy/env/scripts data
   - calls `POST /v1/deploy`
   - optionally forces restart of all containers in the stack
 - `workflows/deploy-jellyfin.yml`: stack-specific workflow example
@@ -22,4 +22,4 @@ Expected GitHub setup in caller repo:
   - `LASTFM_SECRET`
   - etc.
 
-The workflow passes `toJSON(secrets)` into the reusable action. The action merges those secrets with optional committed `<stack>/env.json` and sends the result as `env` in the CCM deploy payload.
+The workflow passes `toJSON(secrets)` into the reusable action. The action merges those secrets with optional committed `<stack>/env.json` and sends the result as `env` in the CCM deploy payload. If `scripts_dir_path` is set, all `*.sh` files in that directory are sent in payload `scripts`.

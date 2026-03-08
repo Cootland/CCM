@@ -124,6 +124,36 @@ Time tracking behavior:
 - Tracking keeps last attempt/success time, last result, last exit code, and consecutive failures.
 - Endpoint: `GET /v1/restarts/tracking`.
 
+### Host Script Schedules (scheduled host commands)
+
+CCM can also run host-side shell scripts on a cron schedule per stack.
+
+- Define scripts under `stacks.<id>.scripts`.
+- Each script has:
+  - `name` unique within the stack
+  - `cron` schedule (5-field format)
+  - `file` script filename (must end in `.sh`)
+  - optional `timezone` (IANA timezone, defaults to Local)
+- The script file must be sent in `POST /v1/deploy` payload `scripts`.
+- CCM writes scripts to `<deploy_root>/<deploy_subdir>/ccm_scripts/<file>`.
+- Scheduler executes the script on the target host via `/bin/sh`.
+
+Example:
+
+```yaml
+stacks:
+  arrbox:
+    target: arrbox
+    deploy_subdir: arrbox
+    scripts:
+      - name: backup-metadata
+        cron: "15 2 * * *"
+        file: backup-metadata.sh
+      - name: weekly-maintenance
+        cron: "0 5 * * 0"
+        file: weekly-maintenance.sh
+```
+
 ### 4) Navigate the UI
 
 Open `http://<ccm-host>:8080`.
@@ -180,12 +210,14 @@ During workflow execution, the reusable action reads files from that stack direc
 - `docker-compose.yml` content is sent as `compose_yml`.
 - If present, `Caddyfile` content is sent as `caddyfile`.
 - Environment data is sent as `env` (JSON key/value map).
+- If configured, `ccm_scripts/*.sh` files are sent as payload `scripts`.
 
 CCM writes the received payload into the stack deploy directory on the target host:
 
 - always writes `docker-compose.yml`
 - writes `Caddyfile` only when `caddyfile` is present
 - writes `.env` when merged env data is non-empty
+- writes `ccm_scripts/<file>.sh` for each payload script
 
 Then CCM runs compose (`pull`/`up`) according to stack flags.
 
@@ -241,6 +273,9 @@ If your workflow uses only merged `env` (no `env_file`), the final `.env` is gen
 - `env_file` optional raw `.env` text.
 - `env` optional key/value map merged into `.env` (overrides duplicate keys from `env_file`).
 - `caddyfile` optional Caddyfile content.
+- `scripts` optional array of host script files:
+  - each item: `{ "file": "job.sh", "content": "#!/bin/sh\n..." }`
+  - files are written to `<deploy_subdir>/ccm_scripts/` with executable permissions.
 - `run_compose` optional boolean.
   - For non-`ccm` stacks, default is `true`.
   - For `ccm` stack, default is `false` (write files only; use `POST /v1/compose/ccm/redeploy` to apply safely).
