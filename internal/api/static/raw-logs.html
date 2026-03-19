@@ -23,16 +23,27 @@
     }
 
     const es = new EventSource(`/v1/containers/${encodeURIComponent(id)}/logs/stream?tail=${encodeURIComponent(tail)}`);
+    let suppressNextError = false;
     es.onmessage = (evt) => {
       out.textContent += evt.data + '\n';
       out.scrollTop = out.scrollHeight;
     };
-    es.addEventListener('error', (evt) => {
+    es.addEventListener('terminal-error', (evt) => {
       if (evt && typeof evt.data === 'string' && evt.data.trim()) {
         out.textContent += `[stream error] ${evt.data}\n`;
       }
+      suppressNextError = true;
+      es.close();
+    });
+    es.addEventListener('done', () => {
+      suppressNextError = true;
+      es.close();
     });
     es.onerror = () => {
+      if (suppressNextError) {
+        suppressNextError = false;
+        return;
+      }
       out.textContent += '[stream error or disconnected]\n';
     };
   </script>

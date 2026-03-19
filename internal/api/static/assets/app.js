@@ -3,6 +3,7 @@ let selected = null;
 let stream = null;
 let streamContainerID = null;
 let paused = false;
+let suppressNextStreamError = false;
 const composeChildrenByID = {};
 const expandedCompose = new Set();
 const scheduledTasksByStackID = {};
@@ -296,6 +297,7 @@ function stopLogs({ clearSelection = true } = {}) {
     stream.close();
     stream = null;
   }
+  suppressNextStreamError = false;
   setStreamIndicator('inactive');
   if (clearSelection) {
     streamContainerID = null;
@@ -321,7 +323,21 @@ function startLogs(id, { resetOutput = true } = {}) {
       $('logs').scrollTop = $('logs').scrollHeight;
     }
   };
+  stream.addEventListener('terminal-error', (evt) => {
+    suppressNextStreamError = true;
+    setStreamIndicator('inactive');
+    $('logs').textContent += `[stream error] ${evt.data || 'log stream failed'}\n`;
+    stopLogs({ clearSelection: false });
+  });
+  stream.addEventListener('done', () => {
+    suppressNextStreamError = true;
+    stopLogs({ clearSelection: false });
+  });
   stream.onerror = () => {
+    if (suppressNextStreamError) {
+      suppressNextStreamError = false;
+      return;
+    }
     setStreamIndicator('inactive');
     $('logs').textContent += '[stream error or disconnected]\n';
   };
