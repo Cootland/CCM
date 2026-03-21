@@ -6,6 +6,15 @@
   <title>CCM Console</title>
   <link rel="stylesheet" href="/assets/base.css" />
   <link rel="stylesheet" href="/assets/themes/{{.Theme}}.css" />
+  <script>
+    (function() {
+      if (location.pathname === '/') {
+        var t = localStorage.getItem('ccm-theme');
+        if (t && t !== 'win98') { location.replace('/' + t); return; }
+      }
+      localStorage.setItem('ccm-theme', '{{.Theme}}');
+    })();
+  </script>
 </head>
 <body class="theme-{{.Theme}}">
   <div class="desktop-bg">
@@ -16,7 +25,7 @@
           <strong>Central Container Manager</strong>
         </div>
         <div class="titlebar-right">
-          <select class="theme-select" onchange="location='/'+this.value">
+          <select class="theme-select" onchange="localStorage.setItem('ccm-theme',this.value);location.href='/'+this.value">
             <option value="win98"{{if eq .Theme "win98"}} selected{{end}}>Win98</option>
             <option value="vista"{{if eq .Theme "vista"}} selected{{end}}>Vista</option>
             <option value="leopard"{{if eq .Theme "leopard"}} selected{{end}}>Leopard</option>
