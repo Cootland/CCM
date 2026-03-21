@@ -18,7 +18,14 @@
           <span id="streamDot" class="title-dot leopard-stream-proxy" aria-hidden="true" title="Log stream disconnected"></span>
         </div>
         <strong class="leopard-window-title">Central Container Manager</strong>
-        <div class="titlebar-right leopard-app-name">CCM</div>
+        <div class="titlebar-right leopard-app-name">
+          <select class="theme-select" onchange="location='/'+this.value">
+            <option value="win98"{{if eq .Theme "win98"}} selected{{end}}>Win98</option>
+            <option value="vista"{{if eq .Theme "vista"}} selected{{end}}>Vista</option>
+            <option value="leopard"{{if eq .Theme "leopard"}} selected{{end}}>Leopard</option>
+            <option value="bloomi"{{if eq .Theme "bloomi"}} selected{{end}}>Bloomi</option>
+          </select>
+        </div>
       </div>
 
       <div class="app leopard-app">

@@ -67,6 +67,20 @@ body {
 .titlebar-right {
   font-size: 11px;
   opacity: var(--titlebar-right-opacity);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-select {
+  font-family: inherit;
+  font-size: 11px;
+  padding: 1px 3px;
+  background: var(--button-bg);
+  border: 2px solid;
+  border-color: var(--line-light) var(--line-deep) var(--line-deep) var(--line-light);
+  color: inherit;
+  cursor: pointer;
 }
 
 .app {

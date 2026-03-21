@@ -17,6 +17,12 @@
           <span id="subtitle" class="bloomi-subtitle">No host machine selected</span>
         </div>
         <div id="status" class="bloomi-top-status">idle</div>
+        <select class="theme-select" onchange="location='/'+this.value">
+          <option value="win98"{{if eq .Theme "win98"}} selected{{end}}>Win98</option>
+          <option value="vista"{{if eq .Theme "vista"}} selected{{end}}>Vista</option>
+          <option value="leopard"{{if eq .Theme "leopard"}} selected{{end}}>Leopard</option>
+          <option value="bloomi"{{if eq .Theme "bloomi"}} selected{{end}}>Bloomi</option>
+        </select>
       </div>
 
       <div class="app bloomi-app">

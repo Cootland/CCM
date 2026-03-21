@@ -15,7 +15,14 @@
           <span id="streamDot" class="title-dot vista-orb" title="Log stream disconnected"></span>
           <strong class="vista-title-text">Central Container Manager</strong>
         </div>
-        <div class="titlebar-right vista-title-right">CCM</div>
+        <div class="titlebar-right vista-title-right">
+          <select class="theme-select" onchange="location='/'+this.value">
+            <option value="win98"{{if eq .Theme "win98"}} selected{{end}}>Win98</option>
+            <option value="vista"{{if eq .Theme "vista"}} selected{{end}}>Vista</option>
+            <option value="leopard"{{if eq .Theme "leopard"}} selected{{end}}>Leopard</option>
+            <option value="bloomi"{{if eq .Theme "bloomi"}} selected{{end}}>Bloomi</option>
+          </select>
+        </div>
       </div>
 
       <div class="app vista-app">
