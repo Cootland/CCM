@@ -1,5 +1,7 @@
 # Central Container Manager (CCM)
 
+> This is my personal fork of [llllogan/ccm](https://github.com/llllogan/ccm) — all credit to Logan for the original project, just adding my own bits on top.
+
 CCM is a single-binary control plane for Docker Compose homelabs. It connects to Docker hosts over SSH, shows live inventory in a UI, and provides API endpoints for deploy/redeploy/container control.
 
 ## Section 1: First Install, UI, and Day-1 Operations
