@@ -75,8 +75,10 @@ body {
 .theme-select {
   font-family: inherit;
   font-size: 11px;
-  padding: 1px 3px;
-  background: var(--input-bg, #fff);
+  padding: 1px 18px 1px 3px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23555'/%3E%3C/svg%3E") no-repeat right 4px center;
   border: 2px solid;
   border-color: var(--line-light) var(--line-deep) var(--line-deep) var(--line-light);
   color: #000;
