@@ -133,8 +133,22 @@ func (r *Router) uiRoute(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		theme = path
+	} else {
+		if c, err := req.Cookie("ccm-theme"); err == nil {
+			if _, ok := r.themes[c.Value]; ok && c.Value != defaultTheme {
+				http.Redirect(w, req, "/"+c.Value, http.StatusFound)
+				return
+			}
+		}
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "ccm-theme",
+		Value:    theme,
+		Path:     "/",
+		MaxAge:   365 * 24 * 60 * 60,
+		SameSite: http.SameSiteLaxMode,
+	})
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tpl := r.index
 	if themed, ok := r.tpls[theme]; ok {

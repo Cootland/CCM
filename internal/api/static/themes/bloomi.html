@@ -6,7 +6,6 @@
   <title>CCM Console</title>
   <link rel="stylesheet" href="/assets/base.css" />
   <link rel="stylesheet" href="/assets/themes/{{.Theme}}.css" />
-  <script>localStorage.setItem('ccm-theme','{{.Theme}}');</script>
 </head>
 <body class="theme-{{.Theme}}">
   <div class="desktop-bg bloomi-desktop">
@@ -18,7 +17,7 @@
           <span id="subtitle" class="bloomi-subtitle">No host machine selected</span>
         </div>
         <div id="status" class="bloomi-top-status">idle</div>
-        <select class="theme-select" onchange="localStorage.setItem('ccm-theme',this.value);location.href='/'+this.value">
+        <select class="theme-select" onchange="location.href='/'+this.value">
           <option value="win98"{{if eq .Theme "win98"}} selected{{end}}>Win98</option>
           <option value="vista"{{if eq .Theme "vista"}} selected{{end}}>Vista</option>
           <option value="leopard"{{if eq .Theme "leopard"}} selected{{end}}>Leopard</option>
