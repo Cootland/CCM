@@ -76,7 +76,7 @@ body {
   font-family: inherit;
   font-size: 11px;
   padding: 1px 3px;
-  background: var(--button-bg);
+  background: var(--input-bg, #fff);
   border: 2px solid;
   border-color: var(--line-light) var(--line-deep) var(--line-deep) var(--line-light);
   color: #000;
