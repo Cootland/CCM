@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,9 +24,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute tag
+        id: tag
+        run: |
+          ref="${GITHUB_REF_NAME}"
+          if [ "$ref" = "master" ]; then
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${ref//\//-}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/cootland/ccm:latest
+          tags: ghcr.io/cootland/ccm:${{ steps.tag.outputs.tag }}
