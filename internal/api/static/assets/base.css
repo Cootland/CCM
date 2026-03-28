@@ -79,7 +79,7 @@ body {
   background: var(--button-bg);
   border: 2px solid;
   border-color: var(--line-light) var(--line-deep) var(--line-deep) var(--line-light);
-  color: inherit;
+  color: #000;
   cursor: pointer;
 }
 
